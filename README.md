@@ -8,18 +8,23 @@ trip they are already on, the app says so — but never stops you.
 
 ## Running it
 
-```bash
-npm install
-npm run dev      # http://localhost:5173
-```
+**Double-click `start-travel-tracker.cmd`.** It installs dependencies the first
+time, starts the server, and opens the app in your browser. Leave the black
+window open while you use the app; closing it stops the server.
+
+From a terminal, `npm start` does the same thing.
 
 | Command | What it does |
 | --- | --- |
-| `npm run dev` | Local dev server with hot reload |
+| `npm start` | Start the app and open it in your browser |
+| `npm run start:fast` | Build first, then serve - snappier, but no live reload |
+| `npm run dev` | Dev server without opening a browser |
 | `npm test` | Run the test suite once |
 | `npm run test:watch` | Re-run tests as you edit |
 | `npm run build` | Typecheck and produce `dist/` |
 | `npm run lint` | Lint the source |
+
+The app runs at http://localhost:5173.
 
 ## Using it
 
