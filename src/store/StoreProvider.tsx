@@ -3,6 +3,7 @@ import type { TravelData } from './types'
 import { LocalStorageStore, type TravelStore } from './LocalStorageStore'
 import { StoreCtx, type StoreValue } from './context'
 import * as ops from './operations'
+import { mergeMembers } from './mergeMembers'
 
 export function StoreProvider({ children, store }: { children: ReactNode; store?: TravelStore }) {
   // Lazy initialisers so the backend is constructed and read exactly once.
@@ -37,6 +38,7 @@ export function StoreProvider({ children, store }: { children: ReactNode; store?
       assign: (tripId, memberId) => apply((d) => ops.assign(d, tripId, memberId)),
       unassign: (tripId, memberId) => apply((d) => ops.unassign(d, tripId, memberId)),
       moveAssignment: (from, to, memberId) => apply((d) => ops.moveAssignment(d, from, to, memberId)),
+      importMembers: (drafts) => apply((d) => mergeMembers(d, drafts).data),
       replaceAll: (next) => apply(() => next),
     }),
     [data, recovered, apply],

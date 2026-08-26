@@ -89,7 +89,7 @@ export function TripCard({
         </option>
         {available.map((m) => (
           <option key={m.id} value={m.id}>
-            {m.name}
+            {m.fullName}
           </option>
         ))}
       </select>

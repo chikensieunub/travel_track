@@ -28,21 +28,46 @@ The app runs at http://localhost:5173.
 
 ## Using it
 
-- **Members** — the left panel. Search by name, team or role; filter by team.
-  Unticking "Currently on the team" keeps a leaver's travel history but greys
-  them out and drops them from the add-to-trip menus.
-- **Trips** — sorted into *Upcoming* and *Past*, worked out from today's date, so
+- **Members** - the left panel. Each person has a **domain name** (their network
+  account, the unique key), **full name**, **direct boss** and **location**.
+  Search across all four; filter by location or by boss. Unticking "Currently on
+  the team" keeps a leaver's travel history but greys them out and drops them
+  from the add-to-trip menus.
+- **Trips** - sorted into *Upcoming* and *Past*, worked out from today's date, so
   trips move to *Past* on their own. Filter by destination, purpose or status.
-- **Assigning people** — drag a name onto a trip card. Drag a person from one
+- **Assigning people** - drag a name onto a trip card. Drag a person from one
   trip card to another to move them; drag them back to the roster to take them
   off. Every trip card also has an **+ Add member** menu, so nothing depends on
   being able to drag.
-- **Keyboard** — tab to a person's ⠿ handle, press space to lift, arrow keys to
+- **Keyboard** - tab to a person's handle, press space to lift, arrow keys to
   move, space to drop.
-- **Clashes** — dropping someone onto a trip that overlaps another of their trips
+- **Clashes** - dropping someone onto a trip that overlaps another of their trips
   raises a warning with an Undo, and marks the person on the card with an amber
-  dot. Two trips that merely touch — one ending the day the next begins — count
+  dot. Two trips that merely touch - one ending the day the next begins - count
   as a clash, because nobody is in two places that day.
+
+## Importing members from Excel
+
+**Members → Import members** reads an `.xlsx` file. Row one must be your column
+headings; `sample-members.xlsx` in this folder shows the shape.
+
+Headings are matched for you - `Domain Name`, `Username`, `Manager`, `Office`
+and many similar spellings are all understood. Anything unrecognised you map by
+hand from a dropdown. You then see a preview and a count of what will change,
+and **nothing touches the roster until you press Import**.
+
+**Domain name identifies people**, compared ignoring case. So:
+
+- someone already in the roster has their details refreshed, keeping their id and
+  therefore all their trip history;
+- someone new is added;
+- **anyone in the roster but missing from the file is left alone** - a partial
+  file can never wipe people out;
+- rows with no domain name are skipped and counted;
+- if a domain name repeats inside one file, the last row wins and you are told.
+
+Whether someone is marked as having left is a decision made in the app, so an
+import never silently reactivates them.
 
 ## Your data
 
@@ -64,6 +89,10 @@ src/
     types.ts             Member, Trip, Assignment, TravelData
     derive.ts            Pure date logic: end dates, overlaps, past/upcoming
     operations.ts        Immutable CRUD; deletes cascade to assignments
+    readSheet.ts         Reads an .xlsx into headers plus rows
+    importMembers.ts     Header matching and row normalisation, pure
+    mergeMembers.ts      Folds imported rows in, keyed on domain name
+    migrate.ts           Brings older stored data up to the current schema
     LocalStorageStore.ts TravelStore interface + browser-storage implementation
     context.ts           Store context and the useStore hook
     StoreProvider.tsx    Wires operations to persistence
@@ -73,6 +102,7 @@ src/
     TripCard.tsx         One trip, its people, and its drop target
     MemberChip.tsx       Draggable people, in the roster and on trips
     MemberForm.tsx       Add/edit a member
+    ImportMembersDialog.tsx  File picker, column mapping, preview, confirm
     TripForm.tsx         Add/edit a trip
 ```
 

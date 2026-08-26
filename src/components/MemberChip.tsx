@@ -10,15 +10,15 @@ export function RosterMember({ member, onEdit, onDelete }: { member: Member; onE
 
   return (
     <li className={`roster-member${member.active ? '' : ' inactive'}${isDragging ? ' dragging' : ''}`}>
-      <span ref={setNodeRef} className="grip" {...listeners} {...attributes} aria-label={`Drag ${member.name}`}>
+      <span ref={setNodeRef} className="grip" {...listeners} {...attributes} aria-label={`Drag ${member.fullName}`}>
         ⠿
       </span>
       <span className="roster-member-text">
-        <strong>{member.name}</strong>
-        <small>{[member.team, member.role].filter(Boolean).join(' · ') || 'No team set'}</small>
+        <strong>{member.fullName}</strong>
+        <small>{[member.location, member.directBoss && `→ ${member.directBoss}`].filter(Boolean).join(' · ') || member.domainName}</small>
       </span>
-      <button className="icon" onClick={onEdit} aria-label={`Edit ${member.name}`}>✎</button>
-      <button className="icon" onClick={onDelete} aria-label={`Delete ${member.name}`}>×</button>
+      <button className="icon" onClick={onEdit} aria-label={`Edit ${member.fullName}`}>✎</button>
+      <button className="icon" onClick={onDelete} aria-label={`Delete ${member.fullName}`}>×</button>
     </li>
   )
 }
@@ -45,7 +45,7 @@ export function AssignedMember({
   return (
     <li
       className={`chip${conflict ? ' chip-conflict' : ''}${isDragging ? ' dragging' : ''}`}
-      aria-label={`${member.name} on ${tripName}${conflict ? `, clashes with ${conflict}` : ''}`}
+      aria-label={`${member.fullName} on ${tripName}${conflict ? `, clashes with ${conflict}` : ''}`}
     >
       <span ref={setNodeRef} {...listeners} {...attributes} className="chip-grab">
         {conflict && (
@@ -53,9 +53,9 @@ export function AssignedMember({
             !
           </span>
         )}
-        {member.name}
+        {member.fullName}
       </span>
-      <button className="chip-remove" onClick={onRemove} aria-label={`Remove ${member.name} from ${tripName}`}>
+      <button className="chip-remove" onClick={onRemove} aria-label={`Remove ${member.fullName} from ${tripName}`}>
         ×
       </button>
     </li>

@@ -532,3 +532,75 @@ button:focus-visible,
   border-radius: 8px;
   box-shadow: 0 8px 20px rgb(0 0 0 / 25%);
 }
+
+/* --- import dialog -------------------------------------------------------- */
+
+.panel-head-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.filter-pair {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.import-dialog h4 {
+  margin: 14px 0 2px;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+}
+
+.mapping-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 10px;
+}
+
+.table-scroll {
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+table.preview {
+  width: 100%;
+  font-size: 13px;
+  border-collapse: collapse;
+}
+
+table.preview th,
+table.preview td {
+  padding: 6px 10px;
+  text-align: left;
+  white-space: nowrap;
+  border-bottom: 1px solid var(--border);
+}
+
+table.preview th {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted);
+  background: var(--surface-2);
+}
+
+table.preview tr:last-child td {
+  border-bottom: none;
+}
+
+.import-summary {
+  margin: 12px 0 0;
+  font-size: 14px;
+}
+
+.warn-text {
+  color: var(--warn);
+}
+
+.import-dialog input[type='file'] {
+  padding: 6px;
+}

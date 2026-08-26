@@ -13,8 +13,8 @@ describe('LocalStorageStore', () => {
 
   test('round-trips saved data', () => {
     const store = new LocalStorageStore()
-    store.save(addMember(emptyData(), { name: 'Ana', team: 'Eng', role: 'Tech' }))
-    expect(new LocalStorageStore().load().data.members[0].name).toBe('Ana')
+    store.save(addMember(emptyData(), { domainName: 'ACME\\acruz', fullName: 'Ana' }))
+    expect(new LocalStorageStore().load().data.members[0].fullName).toBe('Ana')
   })
 
   test('unparseable stored data loads empty and hands back the raw text', () => {

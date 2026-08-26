@@ -6,20 +6,28 @@ export function RosterPanel({
   members,
   query,
   onQueryChange,
-  team,
-  onTeamChange,
-  teams,
+  location,
+  onLocationChange,
+  locations,
+  boss,
+  onBossChange,
+  bosses,
   onAdd,
+  onImport,
   onEdit,
   onDelete,
 }: {
   members: Member[]
   query: string
   onQueryChange: (value: string) => void
-  team: string
-  onTeamChange: (value: string) => void
-  teams: string[]
+  location: string
+  onLocationChange: (value: string) => void
+  locations: string[]
+  boss: string
+  onBossChange: (value: string) => void
+  bosses: string[]
   onAdd: () => void
+  onImport: () => void
   onEdit: (member: Member) => void
   onDelete: (member: Member) => void
 }) {
@@ -30,7 +38,10 @@ export function RosterPanel({
     <section className="roster" aria-label="Members" ref={setNodeRef}>
       <header className="panel-head">
         <h2>Members</h2>
-        <button className="primary small" onClick={onAdd}>Add member</button>
+        <div className="panel-head-actions">
+          <button className="small" onClick={onImport}>Import members</button>
+          <button className="primary small" onClick={onAdd}>Add member</button>
+        </div>
       </header>
 
       <div className="roster-filters">
@@ -38,17 +49,26 @@ export function RosterPanel({
         <input
           id="member-search"
           type="search"
-          placeholder="Search members…"
+          placeholder="Search name, domain, location…"
           value={query}
           onChange={(e) => onQueryChange(e.target.value)}
         />
-        <label className="visually-hidden" htmlFor="team-filter">Filter by team</label>
-        <select id="team-filter" value={team} onChange={(e) => onTeamChange(e.target.value)}>
-          <option value="all">All teams</option>
-          {teams.map((t) => (
-            <option key={t} value={t}>{t}</option>
-          ))}
-        </select>
+        <div className="filter-pair">
+          <label className="visually-hidden" htmlFor="location-filter">Filter by location</label>
+          <select id="location-filter" value={location} onChange={(e) => onLocationChange(e.target.value)}>
+            <option value="all">All locations</option>
+            {locations.map((l) => (
+              <option key={l} value={l}>{l}</option>
+            ))}
+          </select>
+          <label className="visually-hidden" htmlFor="boss-filter">Filter by direct boss</label>
+          <select id="boss-filter" value={boss} onChange={(e) => onBossChange(e.target.value)}>
+            <option value="all">All bosses</option>
+            {bosses.map((b) => (
+              <option key={b} value={b}>{b}</option>
+            ))}
+          </select>
+        </div>
       </div>
 
       <ul className={`roster-list${isOver ? ' drop-target' : ''}`}>

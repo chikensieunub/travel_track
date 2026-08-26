@@ -9,19 +9,19 @@ import type { TravelData } from './types'
 
 const seed = (): TravelData => {
   let d = emptyData()
-  d = addMember(d, { name: 'Ana', team: 'Engineering', role: 'Field Tech' })
-  d = addMember(d, { name: 'Ben', team: 'Sales', role: 'Account Lead' })
+  d = addMember(d, { domainName: 'ACME\\acruz', fullName: 'Ana', location: 'Manila', directBoss: 'Ben' })
+  d = addMember(d, { domainName: 'ACME\\bortiz', fullName: 'Ben', location: 'Cebu', directBoss: '' })
   d = addTrip(d, { destination: 'Tokyo', startDate: '2026-03-03', durationDays: 7 })
   d = addTrip(d, { destination: 'Berlin', startDate: '2026-03-08', durationDays: 4 })
   return d
 }
-const ana = (d: TravelData) => d.members.find((m) => m.name === 'Ana')!.id
+const ana = (d: TravelData) => d.members.find((m) => m.fullName === 'Ana')!.id
 const tokyo = (d: TravelData) => d.trips.find((t) => t.destination === 'Tokyo')!.id
 const berlin = (d: TravelData) => d.trips.find((t) => t.destination === 'Berlin')!.id
 
 describe('members', () => {
   test('adding a member gives it an id and defaults to active', () => {
-    const d = addMember(emptyData(), { name: 'Ana', team: 'Eng', role: 'Tech' })
+    const d = addMember(emptyData(), { domainName: 'ACME\\acruz', fullName: 'Ana' })
     expect(d.members).toHaveLength(1)
     expect(d.members[0].id).toBeTruthy()
     expect(d.members[0].active).toBe(true)
@@ -29,16 +29,16 @@ describe('members', () => {
 
   test('adding a member does not mutate the original data', () => {
     const before = emptyData()
-    addMember(before, { name: 'Ana', team: 'Eng', role: 'Tech' })
+    addMember(before, { domainName: 'ACME\\acruz', fullName: 'Ana' })
     expect(before.members).toHaveLength(0)
   })
 
   test('updating a member changes only the named fields', () => {
     let d = seed()
-    d = updateMember(d, ana(d), { role: 'Lead Engineer' })
+    d = updateMember(d, ana(d), { location: 'Cebu' })
     const m = d.members.find((x) => x.id === ana(d))!
-    expect(m.role).toBe('Lead Engineer')
-    expect(m.name).toBe('Ana')
+    expect(m.location).toBe('Cebu')
+    expect(m.fullName).toBe('Ana')
   })
 
   test('deleting a member also removes their trip assignments', () => {
@@ -83,7 +83,7 @@ describe('assignment', () => {
   test('assigning a member to a trip records the pairing', () => {
     let d = seed()
     d = assign(d, tokyo(d), ana(d))
-    expect(membersOnTrip(d, tokyo(d)).map((m) => m.name)).toEqual(['Ana'])
+    expect(membersOnTrip(d, tokyo(d)).map((m) => m.fullName)).toEqual(['Ana'])
   })
 
   test('assigning the same member twice does not duplicate them', () => {
@@ -107,7 +107,7 @@ describe('assignment', () => {
     d = assign(d, tokyo(d), ana(d))
     d = moveAssignment(d, tokyo(d), berlin(d), ana(d))
     expect(membersOnTrip(d, tokyo(d))).toHaveLength(0)
-    expect(membersOnTrip(d, berlin(d)).map((m) => m.name)).toEqual(['Ana'])
+    expect(membersOnTrip(d, berlin(d)).map((m) => m.fullName)).toEqual(['Ana'])
   })
 
   test('tripsForMember lists every trip the member is on', () => {

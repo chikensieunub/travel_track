@@ -10,7 +10,7 @@ function Probe() {
     <div>
       <span data-testid="count">{store.data.members.length}</span>
       <span data-testid="recovered">{store.recovered ?? 'none'}</span>
-      <button onClick={() => store.addMember({ name: 'Ana', team: 'Eng', role: 'Tech' })}>add</button>
+      <button onClick={() => store.addMember({ domainName: 'ACME\\acruz', fullName: 'Ana' })}>add</button>
     </div>
   )
 }
@@ -23,7 +23,7 @@ describe('StoreProvider', () => {
   test('starts from whatever was previously stored', () => {
     localStorage.setItem(
       STORAGE_KEY,
-      JSON.stringify({ schemaVersion: 1, members: [{ id: 'm1', name: 'Ben', team: '', role: '', active: true }], trips: [], assignments: [] }),
+      JSON.stringify({ schemaVersion: 2, members: [{ id: 'm1', domainName: 'ACME\\bortiz', fullName: 'Ben', directBoss: '', location: '', active: true }], trips: [], assignments: [] }),
     )
     renderProbe()
     expect(screen.getByTestId('count')).toHaveTextContent('1')
@@ -33,7 +33,7 @@ describe('StoreProvider', () => {
     renderProbe()
     act(() => { screen.getByText('add').click() })
     expect(screen.getByTestId('count')).toHaveTextContent('1')
-    expect(JSON.parse(localStorage.getItem(STORAGE_KEY)!).members[0].name).toBe('Ana')
+    expect(JSON.parse(localStorage.getItem(STORAGE_KEY)!).members[0].fullName).toBe('Ana')
   })
 
   test('surfaces unreadable stored data instead of hiding it', () => {

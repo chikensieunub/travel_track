@@ -1,5 +1,6 @@
 import type { TravelData } from './types'
-import { SCHEMA_VERSION, emptyData } from './operations'
+import { emptyData } from './operations'
+import { migrate } from './migrate'
 
 export const STORAGE_KEY = 'travel-tracker/v1'
 
@@ -29,14 +30,8 @@ export class LocalStorageStore implements TravelStore {
       for (const key of ['members', 'trips', 'assignments'] as const) {
         if (parsed[key] !== undefined && !isRecordArray(parsed[key])) throw new Error(`bad ${key}`)
       }
-      return {
-        data: {
-          schemaVersion: parsed.schemaVersion ?? SCHEMA_VERSION,
-          members: parsed.members ?? [],
-          trips: parsed.trips ?? [],
-          assignments: parsed.assignments ?? [],
-        },
-      }
+      // Older stored shapes are brought forward rather than rejected.
+      return { data: migrate(parsed) }
     } catch {
       // Leave the bad value in place - overwriting it would destroy the only copy.
       return { data: emptyData(), recovered: raw }

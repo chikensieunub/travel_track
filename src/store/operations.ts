@@ -1,7 +1,7 @@
-import type { Assignment, Member, TravelData, Trip } from './types'
+import type { Assignment, Member, MemberDraft, TravelData, Trip } from './types'
 import { tripOverlaps } from './derive'
 
-export const SCHEMA_VERSION = 1
+export const SCHEMA_VERSION = 2
 
 const newId = (): string =>
   typeof crypto !== 'undefined' && crypto.randomUUID
@@ -14,14 +14,16 @@ export function emptyData(): TravelData {
 
 // --- members ---------------------------------------------------------------
 
-export type NewMember = Pick<Member, 'name'> & Partial<Omit<Member, 'id' | 'name'>>
+export type NewMember = Pick<MemberDraft, 'domainName'> & Partial<MemberDraft>
 
 export function addMember(data: TravelData, input: NewMember): TravelData {
+  const domainName = input.domainName.trim()
   const member: Member = {
     id: newId(),
-    name: input.name.trim(),
-    team: input.team?.trim() ?? '',
-    role: input.role?.trim() ?? '',
+    domainName,
+    fullName: input.fullName?.trim() || domainName,
+    directBoss: input.directBoss?.trim() ?? '',
+    location: input.location?.trim() ?? '',
     active: input.active ?? true,
   }
   return { ...data, members: [...data.members, member] }

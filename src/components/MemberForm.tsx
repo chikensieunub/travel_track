@@ -1,14 +1,7 @@
 import { useState, type FormEvent } from 'react'
-import type { Member } from '../store/types'
+import type { Member, MemberDraft } from '../store/types'
 
-export interface MemberDraft {
-  name: string
-  team: string
-  role: string
-  active: boolean
-}
-
-const blank: MemberDraft = { name: '', team: '', role: '', active: true }
+const blank: MemberDraft = { domainName: '', fullName: '', directBoss: '', location: '', active: true }
 
 export function MemberForm({
   initial,
@@ -20,36 +13,55 @@ export function MemberForm({
   onCancel: () => void
 }) {
   const [draft, setDraft] = useState<MemberDraft>(initial ? { ...initial } : blank)
+  const set = (patch: Partial<MemberDraft>) => setDraft({ ...draft, ...patch })
 
   const submit = (event: FormEvent) => {
     event.preventDefault()
-    if (!draft.name.trim()) return
-    onSave({ ...draft, name: draft.name.trim() })
+    const domainName = draft.domainName.trim()
+    if (!domainName) return
+    onSave({
+      ...draft,
+      domainName,
+      fullName: draft.fullName.trim() || domainName,
+      directBoss: draft.directBoss.trim(),
+      location: draft.location.trim(),
+    })
   }
 
   return (
     <form className="form" onSubmit={submit}>
       <h3>{initial ? 'Edit member' : 'New member'}</h3>
-      <label htmlFor="member-name">Name</label>
-      <input
-        id="member-name"
-        value={draft.name}
-        autoFocus
-        onChange={(e) => setDraft({ ...draft, name: e.target.value })}
-      />
 
-      <label htmlFor="member-team">Team</label>
-      <input id="member-team" value={draft.team} onChange={(e) => setDraft({ ...draft, team: e.target.value })} />
+      <div className="form-row">
+        <div>
+          <label htmlFor="member-domain">Domain name</label>
+          <input
+            id="member-domain"
+            value={draft.domainName}
+            autoFocus
+            placeholder="ACME\acruz"
+            onChange={(e) => set({ domainName: e.target.value })}
+          />
+        </div>
+        <div>
+          <label htmlFor="member-full-name">Full name</label>
+          <input id="member-full-name" value={draft.fullName} onChange={(e) => set({ fullName: e.target.value })} />
+        </div>
+      </div>
 
-      <label htmlFor="member-role">Role</label>
-      <input id="member-role" value={draft.role} onChange={(e) => setDraft({ ...draft, role: e.target.value })} />
+      <div className="form-row">
+        <div>
+          <label htmlFor="member-boss">Direct boss</label>
+          <input id="member-boss" value={draft.directBoss} onChange={(e) => set({ directBoss: e.target.value })} />
+        </div>
+        <div>
+          <label htmlFor="member-location">Location</label>
+          <input id="member-location" value={draft.location} onChange={(e) => set({ location: e.target.value })} />
+        </div>
+      </div>
 
       <label className="checkbox">
-        <input
-          type="checkbox"
-          checked={draft.active}
-          onChange={(e) => setDraft({ ...draft, active: e.target.checked })}
-        />
+        <input type="checkbox" checked={draft.active} onChange={(e) => set({ active: e.target.checked })} />
         Currently on the team
       </label>
 

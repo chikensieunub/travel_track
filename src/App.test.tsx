@@ -9,10 +9,11 @@ const upcoming = () => screen.getByRole('region', { name: 'Upcoming trips' })
 const past = () => screen.getByRole('region', { name: 'Past trips' })
 const roster = () => screen.getByRole('region', { name: 'Members' })
 
-async function addMember(user: ReturnType<typeof userEvent.setup>, name: string, team = 'Engineering') {
+async function addMember(user: ReturnType<typeof userEvent.setup>, name: string, location = 'Manila') {
   await user.click(within(roster()).getByRole('button', { name: 'Add member' }))
-  await user.type(screen.getByLabelText('Name'), name)
-  await user.type(screen.getByLabelText('Team'), team)
+  await user.type(screen.getByLabelText('Domain name'), 'ACME\\' + name.toLowerCase())
+  await user.type(screen.getByLabelText('Full name'), name)
+  await user.type(screen.getByLabelText('Location'), location)
   await user.click(screen.getByRole('button', { name: 'Save member' }))
 }
 
@@ -118,11 +119,31 @@ describe('Travel Tracker', () => {
   test('searching the roster narrows it to matching members', async () => {
     const user = userEvent.setup()
     render(<App />)
-    await addMember(user, 'Ana')
-    await addMember(user, 'Ben')
-    await user.type(within(roster()).getByLabelText('Search members'), 'an')
+    await addMember(user, 'Ana', 'Manila')
+    await addMember(user, 'Ben', 'Berlin')
+    await user.type(within(roster()).getByLabelText('Search members'), 'ana')
     expect(within(roster()).getByText('Ana')).toBeInTheDocument()
     expect(within(roster()).queryByText('Ben')).not.toBeInTheDocument()
+  })
+
+  test('the roster can be searched by location as well as by name', async () => {
+    const user = userEvent.setup()
+    render(<App />)
+    await addMember(user, 'Ana', 'Manila')
+    await addMember(user, 'Ben', 'Berlin')
+    await user.type(within(roster()).getByLabelText('Search members'), 'berlin')
+    expect(within(roster()).getByText('Ben')).toBeInTheDocument()
+    expect(within(roster()).queryByText('Ana')).not.toBeInTheDocument()
+  })
+
+  test('the roster can be searched by domain name', async () => {
+    const user = userEvent.setup()
+    render(<App />)
+    await addMember(user, 'Ana', 'Manila')
+    await addMember(user, 'Ben', 'Berlin')
+    await user.type(within(roster()).getByLabelText('Search members'), 'acme\\ben')
+    expect(within(roster()).getByText('Ben')).toBeInTheDocument()
+    expect(within(roster()).queryByText('Ana')).not.toBeInTheDocument()
   })
 
   test('filtering trips narrows the board to matching destinations', async () => {

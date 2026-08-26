@@ -13,11 +13,12 @@ import {
 import { useStore } from '../store/context'
 import { isPast } from '../store/derive'
 import { conflictsFor, emptyData } from '../store/operations'
-import type { Member, TravelData, Trip, TripStatus } from '../store/types'
+import type { Member, MemberDraft, TravelData, Trip, TripStatus } from '../store/types'
 import { RosterPanel } from './RosterPanel'
 import { TripCard } from './TripCard'
-import { MemberForm, type MemberDraft } from './MemberForm'
+import { MemberForm } from './MemberForm'
 import { TripForm, type TripDraft } from './TripForm'
+import { ImportMembersDialog } from './ImportMembersDialog'
 
 /** Today as a local yyyy-mm-dd, so "past" flips over at the user's midnight, not UTC's. */
 function todayIso(): string {
@@ -39,27 +40,35 @@ export function Board() {
   const today = todayIso()
 
   const [memberQuery, setMemberQuery] = useState('')
-  const [teamFilter, setTeamFilter] = useState('all')
+  const [locationFilter, setLocationFilter] = useState('all')
+  const [bossFilter, setBossFilter] = useState('all')
   const [tripQuery, setTripQuery] = useState('')
   const [statusFilter, setStatusFilter] = useState<'all' | TripStatus>('all')
   const [memberForm, setMemberForm] = useState<{ open: boolean; member?: Member }>({ open: false })
   const [tripForm, setTripForm] = useState<{ open: boolean; trip?: Trip }>({ open: false })
+  const [importOpen, setImportOpen] = useState(false)
   const [clash, setClash] = useState<Clash | null>(null)
   const [dragged, setDragged] = useState<Member | null>(null)
   const importRef = useRef<HTMLInputElement>(null)
 
-  const teams = useMemo(
-    () => Array.from(new Set(data.members.map((m) => m.team).filter(Boolean))).sort(),
+  const locations = useMemo(
+    () => Array.from(new Set(data.members.map((m) => m.location).filter(Boolean))).sort(),
+    [data.members],
+  )
+
+  const bosses = useMemo(
+    () => Array.from(new Set(data.members.map((m) => m.directBoss).filter(Boolean))).sort(),
     [data.members],
   )
 
   const visibleMembers = useMemo(() => {
     const q = memberQuery.trim().toLowerCase()
     return data.members
-      .filter((m) => (teamFilter === 'all' ? true : m.team === teamFilter))
-      .filter((m) => !q || `${m.name} ${m.team} ${m.role}`.toLowerCase().includes(q))
-      .sort((a, b) => Number(b.active) - Number(a.active) || a.name.localeCompare(b.name))
-  }, [data.members, memberQuery, teamFilter])
+      .filter((m) => (locationFilter === 'all' ? true : m.location === locationFilter))
+      .filter((m) => (bossFilter === 'all' ? true : m.directBoss === bossFilter))
+      .filter((m) => !q || `${m.fullName} ${m.domainName} ${m.location} ${m.directBoss}`.toLowerCase().includes(q))
+      .sort((a, b) => Number(b.active) - Number(a.active) || a.fullName.localeCompare(b.fullName))
+  }, [data.members, memberQuery, locationFilter, bossFilter])
 
   const { upcoming, pastTrips } = useMemo(() => {
     const q = tripQuery.trim().toLowerCase()
@@ -90,7 +99,7 @@ export function Board() {
         memberId,
         tripId,
         fromTripId,
-        message: `${member.name} is already on ${names} during ${trip.destination}.`,
+        message: `${member.fullName} is already on ${names} during ${trip.destination}.`,
       })
     } else {
       setClash(null)
@@ -155,7 +164,7 @@ export function Board() {
     const count = data.assignments.filter((a) => a.memberId === member.id).length
     const suffix = count === 1 ? 'trip' : 'trips'
     const warning = count ? ` They are on ${count} ${suffix}, which will lose them.` : ''
-    if (window.confirm(`Delete ${member.name}?${warning}`)) store.deleteMember(member.id)
+    if (window.confirm(`Delete ${member.fullName}?${warning}`)) store.deleteMember(member.id)
   }
 
   function deleteTrip(trip: Trip) {
@@ -226,6 +235,17 @@ export function Board() {
           </div>
         )}
 
+        {importOpen && (
+          <ImportMembersDialog
+            data={data}
+            onClose={() => setImportOpen(false)}
+            onImport={(drafts) => {
+              store.importMembers(drafts)
+              setImportOpen(false)
+            }}
+          />
+        )}
+
         {memberForm.open && (
           <MemberForm
             initial={memberForm.member}
@@ -256,10 +276,14 @@ export function Board() {
             members={visibleMembers}
             query={memberQuery}
             onQueryChange={setMemberQuery}
-            team={teamFilter}
-            onTeamChange={setTeamFilter}
-            teams={teams}
+            location={locationFilter}
+            onLocationChange={setLocationFilter}
+            locations={locations}
+            boss={bossFilter}
+            onBossChange={setBossFilter}
+            bosses={bosses}
             onAdd={() => setMemberForm({ open: true })}
+            onImport={() => setImportOpen(true)}
             onEdit={(member) => setMemberForm({ open: true, member })}
             onDelete={deleteMember}
           />
@@ -302,7 +326,7 @@ export function Board() {
         </div>
       </div>
 
-      <DragOverlay>{dragged ? <div className="drag-ghost">{dragged.name}</div> : null}</DragOverlay>
+      <DragOverlay>{dragged ? <div className="drag-ghost">{dragged.fullName}</div> : null}</DragOverlay>
     </DndContext>
   )
 }
