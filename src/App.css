@@ -360,8 +360,32 @@ button:focus-visible,
 .trip-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+  grid-auto-flow: dense;
   gap: 14px;
   margin-top: 10px;
+}
+
+/* A busy trip spreads its boss columns sideways instead of growing tall. */
+.trip-card.span-2 {
+  grid-column: span 2;
+}
+
+.trip-card.span-3 {
+  grid-column: span 3;
+}
+
+/* Below three board columns there is nothing to span into. */
+@media (max-width: 1300px) {
+  .trip-card.span-3 {
+    grid-column: span 2;
+  }
+}
+
+@media (max-width: 1000px) {
+  .trip-card.span-2,
+  .trip-card.span-3 {
+    grid-column: span 1;
+  }
 }
 
 .empty {
@@ -644,14 +668,18 @@ table.preview tr:last-child td {
 }
 
 .boss-columns {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  display: flex;
   gap: 8px;
+  align-items: flex-start;
+  padding-bottom: 4px;
+  overflow-x: auto;
 }
 
 .boss-column {
   --boss: var(--series-other);
 
+  flex: 1 1 175px;
+  min-width: 165px;
   padding: 7px 8px 8px;
   background: color-mix(in srgb, var(--boss) 8%, transparent);
   border-top: 3px solid var(--boss);
@@ -704,8 +732,17 @@ table.preview tr:last-child td {
 }
 
 .boss-column .chip {
+  gap: 4px;
+  align-items: center;
   justify-content: space-between;
+  padding: 4px 3px 4px 8px;
+  line-height: 1.3;
   background: var(--surface);
   border-color: color-mix(in srgb, var(--boss) 35%, var(--border));
   border-radius: 6px;
+}
+
+.boss-column .chip-grab {
+  min-width: 0;
+  overflow-wrap: anywhere;
 }

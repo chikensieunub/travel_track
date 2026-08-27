@@ -44,10 +44,14 @@ export function TripCard({
       .map((t) => t.destination)
       .join(', ') || undefined
 
+  // A card claims one board column per boss group, capped so it never hogs the row.
+  const span = Math.min(Math.max(columns.length, 1), 3)
+
   return (
     <article
       ref={setNodeRef}
-      className={`trip-card status-${trip.status}${isOver ? ' drop-target' : ''}`}
+      className={`trip-card status-${trip.status} span-${span}${isOver ? ' drop-target' : ''}`}
+      data-boss-groups={columns.length}
       aria-label={trip.destination}
     >
       <header className="trip-head">

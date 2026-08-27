@@ -155,3 +155,58 @@ describe('Trip card member columns', () => {
     expect(within(card('Tokyo')).queryByText(/^\d+ members?$/)).not.toBeInTheDocument()
   })
 })
+
+describe('Trip card width', () => {
+  beforeEach(() => localStorage.clear())
+
+  test('a card with several boss columns claims more of the board width', async () => {
+    const user = userEvent.setup()
+    render(<App />)
+    await addMember(user, 'Ana', 'Ben Ortiz')
+    await addMember(user, 'Dia', 'Eve Marsh')
+    await addMember(user, 'Fay', 'Gus Hale')
+    await addTrip(user, 'Tokyo')
+    await assignTo(user, 'Tokyo', 'Ana')
+    await assignTo(user, 'Tokyo', 'Dia')
+    await assignTo(user, 'Tokyo', 'Fay')
+
+    expect(card('Tokyo')).toHaveAttribute('data-boss-groups', '3')
+  })
+
+  test('a card with one boss column stays narrow', async () => {
+    const user = userEvent.setup()
+    render(<App />)
+    await addMember(user, 'Ana', 'Ben Ortiz')
+    await addTrip(user, 'Tokyo')
+    await assignTo(user, 'Tokyo', 'Ana')
+
+    expect(card('Tokyo')).toHaveAttribute('data-boss-groups', '1')
+  })
+
+  test('an empty trip stays narrow', async () => {
+    const user = userEvent.setup()
+    render(<App />)
+    await addTrip(user, 'Tokyo')
+
+    expect(card('Tokyo')).toHaveAttribute('data-boss-groups', '0')
+  })
+
+  test('width stops growing past three columns, so a card never hogs the board', async () => {
+    const user = userEvent.setup()
+    render(<App />)
+    for (const [name, boss] of [
+      ['Ana', 'Boss A'],
+      ['Dia', 'Boss B'],
+      ['Fay', 'Boss C'],
+      ['Gil', 'Boss D'],
+      ['Hal', 'Boss E'],
+    ]) {
+      await addMember(user, name, boss)
+    }
+    await addTrip(user, 'Tokyo')
+    for (const name of ['Ana', 'Dia', 'Fay', 'Gil', 'Hal']) await assignTo(user, 'Tokyo', name)
+
+    expect(card('Tokyo')).toHaveAttribute('data-boss-groups', '5')
+    expect(card('Tokyo').className).toContain('span-3')
+  })
+})
