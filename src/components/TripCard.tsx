@@ -2,7 +2,7 @@ import { useDroppable } from '@dnd-kit/core'
 import type { Member, TravelData, Trip } from '../store/types'
 import { formatRange } from '../store/derive'
 import { conflictsFor, membersOnTrip } from '../store/operations'
-import { NO_BOSS, OTHER_SLOT, bossSlots, groupByBoss } from '../store/groupByBoss'
+import { NO_BOSS, OTHER_SLOT, bossSlots, cardSpan, groupByBoss } from '../store/groupByBoss'
 import { AssignedMember } from './MemberChip'
 
 const STATUS_LABEL: Record<Trip['status'], string> = {
@@ -44,8 +44,8 @@ export function TripCard({
       .map((t) => t.destination)
       .join(', ') || undefined
 
-  // A card claims one board column per boss group, capped so it never hogs the row.
-  const span = Math.min(Math.max(columns.length, 1), 3)
+  // Width follows how much there is to show, so busy trips get shorter, not narrower.
+  const span = cardSpan(assigned.length, columns.length)
 
   return (
     <article

@@ -51,3 +51,21 @@ export function bossSlots(members: Member[]): Map<string, number> {
   )
   return new Map(names.map((name, index) => [name, index < SLOT_COUNT ? index : OTHER_SLOT]))
 }
+
+/** Board columns a trip card spans. Wider cards mean shorter ones. */
+export const MAX_SPAN = 3
+
+/** Rows a single board column holds comfortably before a card looks too tall. */
+const ROWS_PER_COLUMN = 6
+
+/**
+ * How wide a trip card should be, from how much it has to show.
+ *
+ * Each member is a row and each group costs a heading row, so a handful of
+ * one-person groups takes as much room as one crowded group. Capped so a single
+ * trip never swallows the whole board.
+ */
+export function cardSpan(memberCount: number, groupCount: number): number {
+  const rows = memberCount + groupCount
+  return Math.min(Math.max(Math.ceil(rows / ROWS_PER_COLUMN), 1), MAX_SPAN)
+}

@@ -191,7 +191,7 @@ describe('Trip card width', () => {
     expect(card('Tokyo')).toHaveAttribute('data-boss-groups', '0')
   })
 
-  test('width stops growing past three columns, so a card never hogs the board', async () => {
+  test('width follows how much the card has to show', async () => {
     const user = userEvent.setup()
     render(<App />)
     for (const [name, boss] of [
@@ -207,6 +207,7 @@ describe('Trip card width', () => {
     for (const name of ['Ana', 'Dia', 'Fay', 'Gil', 'Hal']) await assignTo(user, 'Tokyo', name)
 
     expect(card('Tokyo')).toHaveAttribute('data-boss-groups', '5')
-    expect(card('Tokyo').className).toContain('span-3')
+    // Five people in five groups is ten rows of content: two board columns wide.
+    expect(card('Tokyo').className).toContain('span-2')
   })
 })

@@ -667,19 +667,22 @@ table.preview tr:last-child td {
   color: var(--muted);
 }
 
+/* Groups flow into as many columns as the card is wide enough for, packing
+   small groups together under each other rather than scrolling sideways. */
 .boss-columns {
-  display: flex;
-  gap: 8px;
-  align-items: flex-start;
-  padding-bottom: 4px;
-  overflow-x: auto;
+  columns: 175px auto;
+  column-gap: 8px;
+  orphans: 1;
+  widows: 1;
 }
 
 .boss-column {
   --boss: var(--series-other);
 
-  flex: 1 1 175px;
-  min-width: 165px;
+  display: inline-block;
+  width: 100%;
+  margin-bottom: 8px;
+  break-inside: avoid;
   padding: 7px 8px 8px;
   background: color-mix(in srgb, var(--boss) 8%, transparent);
   border-top: 3px solid var(--boss);

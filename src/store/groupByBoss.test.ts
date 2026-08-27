@@ -1,5 +1,5 @@
 import { describe, test, expect } from 'vitest'
-import { bossSlots, groupByBoss, NO_BOSS, OTHER_SLOT, SLOT_COUNT } from './groupByBoss'
+import { bossSlots, cardSpan, groupByBoss, NO_BOSS, OTHER_SLOT, SLOT_COUNT } from './groupByBoss'
 import type { Member } from './types'
 
 const member = (fullName: string, directBoss: string): Member => ({
@@ -90,5 +90,38 @@ describe('bossSlots', () => {
     const slots = bossSlots([member('Ana', ''), member('Dia', 'Ben')])
     expect(slots.has('')).toBe(false)
     expect(slots.get('Ben')).toBe(0)
+  })
+})
+
+describe('cardSpan', () => {
+  test('a trip with a couple of people stays one column wide', () => {
+    expect(cardSpan(2, 1)).toBe(1)
+  })
+
+  test('an empty trip stays one column wide', () => {
+    expect(cardSpan(0, 0)).toBe(1)
+  })
+
+  test('a middling trip widens to two columns', () => {
+    expect(cardSpan(8, 3)).toBe(2)
+  })
+
+  test('a busy trip widens to three columns', () => {
+    expect(cardSpan(18, 5)).toBe(3)
+  })
+
+  test('never grows past three, so one trip cannot swallow the board', () => {
+    expect(cardSpan(200, 40)).toBe(3)
+  })
+
+  test('many small groups count towards width, since each carries a heading', () => {
+    // The same five people split five ways need more room than five under one boss.
+    expect(cardSpan(5, 5)).toBeGreaterThan(cardSpan(5, 1))
+  })
+
+  test('width never shrinks when someone is added', () => {
+    for (let n = 0; n < 30; n += 1) {
+      expect(cardSpan(n + 1, 2)).toBeGreaterThanOrEqual(cardSpan(n, 2))
+    }
   })
 })
