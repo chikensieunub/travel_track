@@ -604,3 +604,108 @@ table.preview tr:last-child td {
 .import-dialog input[type='file'] {
   padding: 6px;
 }
+
+/* --- boss colour columns --------------------------------------------------
+   Categorical palette validated for both surfaces: worst adjacent CVD dE 9.1
+   light / 8.4 dark. Three light hues fall under 3:1 against the card, so every
+   column carries its boss's name in text - colour is never the only signal. */
+
+:root {
+  --series-1: #2a78d6;
+  --series-2: #eb6834;
+  --series-3: #1baf7a;
+  --series-4: #eda100;
+  --series-5: #e87ba4;
+  --series-6: #008300;
+  --series-7: #4a3aa7;
+  --series-8: #e34948;
+  --series-other: #6b7280;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --series-1: #3987e5;
+    --series-2: #d95926;
+    --series-3: #199e70;
+    --series-4: #c98500;
+    --series-5: #d55181;
+    --series-6: #008300;
+    --series-7: #9085e9;
+    --series-8: #e66767;
+    --series-other: #9aa4b2;
+  }
+}
+
+.trip-total {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.boss-columns {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 8px;
+}
+
+.boss-column {
+  --boss: var(--series-other);
+
+  padding: 7px 8px 8px;
+  background: color-mix(in srgb, var(--boss) 8%, transparent);
+  border-top: 3px solid var(--boss);
+  border-radius: 6px;
+}
+
+.boss-column[data-boss-slot='0'] { --boss: var(--series-1); }
+.boss-column[data-boss-slot='1'] { --boss: var(--series-2); }
+.boss-column[data-boss-slot='2'] { --boss: var(--series-3); }
+.boss-column[data-boss-slot='3'] { --boss: var(--series-4); }
+.boss-column[data-boss-slot='4'] { --boss: var(--series-5); }
+.boss-column[data-boss-slot='5'] { --boss: var(--series-6); }
+.boss-column[data-boss-slot='6'] { --boss: var(--series-7); }
+.boss-column[data-boss-slot='7'] { --boss: var(--series-8); }
+
+.boss-heading {
+  display: flex;
+  gap: 6px;
+  align-items: baseline;
+  justify-content: space-between;
+  margin: 0 0 6px;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.boss-name {
+  overflow: hidden;
+  font-weight: 700;
+  color: var(--text);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Text keeps its own ink; the tinted pill and the top border carry identity. */
+.boss-count {
+  flex: none;
+  padding: 1px 6px;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text);
+  background: color-mix(in srgb, var(--boss) 22%, var(--surface));
+  border-radius: 999px;
+}
+
+.boss-column .chips {
+  flex-direction: column;
+  min-height: 0;
+  align-items: stretch;
+}
+
+.boss-column .chip {
+  justify-content: space-between;
+  background: var(--surface);
+  border-color: color-mix(in srgb, var(--boss) 35%, var(--border));
+  border-radius: 6px;
+}

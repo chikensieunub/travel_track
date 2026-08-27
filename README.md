@@ -39,6 +39,14 @@ The app runs at http://localhost:5173.
   trip card to another to move them; drag them back to the roster to take them
   off. Every trip card also has an **+ Add member** menu, so nothing depends on
   being able to drag.
+- **Who is on a trip** - a trip card shows its total headcount, then splits the
+  people into a column per direct boss, each column in its own colour with its
+  own count. A boss keeps the same colour on every card, so you can scan the
+  board and see whose team is covering what. Anyone with no boss recorded gets a
+  grey column, last. Every column is headed by the boss's name, so the colours
+  are a convenience, never the only way to read it - the palette is validated for
+  colour-vision deficiency in both light and dark themes, and past eight bosses
+  the ninth takes a neutral grey rather than repeating a colour.
 - **Keyboard** - tab to a person's handle, press space to lift, arrow keys to
   move, space to drop.
 - **Clashes** - dropping someone onto a trip that overlaps another of their trips
@@ -93,6 +101,7 @@ src/
     importMembers.ts     Header matching and row normalisation, pure
     mergeMembers.ts      Folds imported rows in, keyed on domain name
     migrate.ts           Brings older stored data up to the current schema
+    groupByBoss.ts       Boss columns and their stable colour slots
     LocalStorageStore.ts TravelStore interface + browser-storage implementation
     context.ts           Store context and the useStore hook
     StoreProvider.tsx    Wires operations to persistence
