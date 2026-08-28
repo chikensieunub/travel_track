@@ -46,7 +46,11 @@ The app runs at http://localhost:5173.
   (**Move up** to bring them back). You can also drag someone straight into
   either panel. The headcount at the top counts both panels together.
 - **Who is on a trip** - each panel splits its people into a column per direct
-  boss, each column in its own colour. In **Confirmed**, a column's heading reads
+  boss, each column in its own colour. Colours follow the boss's name so a team
+  looks the same from card to card; past the eighth manager the palette starts
+  over, and if two teams on one card would land on the same colour, one shifts to
+  the next free one. So no column is ever left colourless and no two teams on a
+  card look alike. In **Confirmed**, a column's heading reads
   as a ratio - `2/3 - 67%`, with a matching bar - meaning two of the three people
   under that boss are confirmed on this trip. The denominator is the boss's whole
   current team in the roster, not just the people on this trip, so it answers

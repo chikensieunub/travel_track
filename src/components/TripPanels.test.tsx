@@ -206,3 +206,50 @@ describe('Moving between panels', () => {
     expect(within(tentative()).getByText('Ana')).toBeInTheDocument()
   })
 })
+
+describe('Colours across the two panels', () => {
+  beforeEach(() => localStorage.clear())
+
+  const slotOf = (panel: HTMLElement, boss: string) =>
+    within(panel).getByRole('group', { name: new RegExp(`^${boss}`) }).getAttribute('data-boss-slot')
+
+  test('a boss looks the same in confirmed and tentative on one card', async () => {
+    const user = userEvent.setup()
+    render(<App />)
+    await addMember(user, 'Ana', 'Ben Ortiz')
+    await addMember(user, 'Chen', 'Ben Ortiz')
+    await addTrip(user, 'Tokyo')
+    await assignTo(user, 'Tokyo', 'Ana')
+    await assignTo(user, 'Tokyo', 'Chen')
+    await selectMember(user, 'Ana')
+    await user.click(within(card('Tokyo')).getByRole('button', { name: /Move down/ }))
+
+    expect(slotOf(confirmed(), 'Ben Ortiz')).toBe(slotOf(tentative(), 'Ben Ortiz'))
+  })
+
+  test('no team on a card is left without a colour', async () => {
+    const user = userEvent.setup()
+    render(<App />)
+    for (let i = 0; i < 10; i += 1) await addMember(user, `P${i}`, `Boss${String(i).padStart(2, '0')}`)
+    await addTrip(user, 'Tokyo')
+    for (let i = 0; i < 10; i += 1) await assignTo(user, 'Tokyo', `P${i}`)
+
+    const columns = within(confirmed()).getAllByRole('group')
+    const slots = columns.map((c) => Number(c.getAttribute('data-boss-slot')))
+    expect(slots).toHaveLength(10)
+    expect(slots.every((s) => s >= 0)).toBe(true)
+  }, 30000)
+
+  test('two teams on the same card never share a colour', async () => {
+    const user = userEvent.setup()
+    render(<App />)
+    for (let i = 0; i < 8; i += 1) await addMember(user, `P${i}`, `Boss${String(i).padStart(2, '0')}`)
+    await addTrip(user, 'Tokyo')
+    for (let i = 0; i < 8; i += 1) await assignTo(user, 'Tokyo', `P${i}`)
+
+    const slots = within(confirmed())
+      .getAllByRole('group')
+      .map((c) => c.getAttribute('data-boss-slot'))
+    expect(new Set(slots).size).toBe(slots.length)
+  }, 30000)
+})

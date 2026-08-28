@@ -1,5 +1,5 @@
 import { describe, test, expect } from 'vitest'
-import { bossSlots, cardSpan, groupByBoss, NO_BOSS, OTHER_SLOT, SLOT_COUNT } from './groupByBoss'
+import { bossSlots, cardSlots, cardSpan, groupByBoss, NO_BOSS, SLOT_COUNT } from './groupByBoss'
 import type { Member } from './types'
 
 const member = (fullName: string, directBoss: string): Member => ({
@@ -72,18 +72,17 @@ describe('bossSlots', () => {
     expect(after.get('Ben')).toBe(before.get('Ben'))
   })
 
-  test('does not reuse a colour once the palette runs out', () => {
-    const many = roster(Array.from({ length: SLOT_COUNT + 3 }, (_, i) => `Boss${String(i).padStart(2, '0')}`))
+  test('every boss gets a colour, however many there are', () => {
+    const many = roster(Array.from({ length: SLOT_COUNT + 6 }, (_, i) => `Boss${String(i).padStart(2, '0')}`))
     const slots = bossSlots(many)
-    const used = [...slots.values()].filter((s) => s !== OTHER_SLOT)
-    expect(new Set(used).size).toBe(used.length)
-    expect(used.length).toBe(SLOT_COUNT)
+    expect(slots.size).toBe(SLOT_COUNT + 6)
+    expect([...slots.values()].every((s) => s >= 0 && s < SLOT_COUNT)).toBe(true)
   })
 
-  test('bosses past the palette share a neutral slot rather than a repeated colour', () => {
+  test('colours start over once the palette is used up', () => {
     const many = roster(Array.from({ length: SLOT_COUNT + 2 }, (_, i) => `Boss${String(i).padStart(2, '0')}`))
     const slots = bossSlots(many)
-    expect(slots.get(`Boss${String(SLOT_COUNT).padStart(2, '0')}`)).toBe(OTHER_SLOT)
+    expect(slots.get(`Boss${String(SLOT_COUNT).padStart(2, '0')}`)).toBe(slots.get('Boss00'))
   })
 
   test('ignores members with no boss recorded', () => {
@@ -123,5 +122,60 @@ describe('cardSpan', () => {
     for (let n = 0; n < 30; n += 1) {
       expect(cardSpan(n + 1, 2)).toBeGreaterThanOrEqual(cardSpan(n, 2))
     }
+  })
+})
+
+describe('cardSlots', () => {
+  const many = (count: number): Member[] =>
+    Array.from({ length: count }, (_, i) => member(`P${i}`, `Boss${String(i).padStart(2, '0')}`))
+
+  test('gives each boss on the card its usual colour when nothing clashes', () => {
+    const people = many(3)
+    const resolved = cardSlots(people, ['Boss00', 'Boss01'])
+    const base = bossSlots(people)
+    expect(resolved.get('Boss00')).toBe(base.get('Boss00'))
+    expect(resolved.get('Boss01')).toBe(base.get('Boss01'))
+  })
+
+  test('never gives two bosses on one card the same colour', () => {
+    const people = many(SLOT_COUNT + 3)
+    // Boss00 and Boss08 share a base colour once the palette wraps.
+    const resolved = cardSlots(people, ['Boss00', `Boss${String(SLOT_COUNT).padStart(2, '0')}`])
+    expect(resolved.get('Boss00')).not.toBe(resolved.get(`Boss${String(SLOT_COUNT).padStart(2, '0')}`))
+  })
+
+  test('every boss on the card gets a real colour, never the neutral slot', () => {
+    const people = many(SLOT_COUNT + 4)
+    const bosses = people.map((p) => p.directBoss).slice(0, 6)
+    const resolved = cardSlots(people, bosses)
+    expect([...resolved.values()].every((s) => s >= 0 && s < SLOT_COUNT)).toBe(true)
+  })
+
+  test('a clash shifts only the later boss, leaving the first on its usual colour', () => {
+    const people = many(SLOT_COUNT + 3)
+    const later = `Boss${String(SLOT_COUNT).padStart(2, '0')}`
+    const resolved = cardSlots(people, ['Boss00', later])
+    expect(resolved.get('Boss00')).toBe(bossSlots(people).get('Boss00'))
+  })
+
+  test('the same card always resolves the same way', () => {
+    const people = many(SLOT_COUNT + 3)
+    const bosses = ['Boss00', `Boss${String(SLOT_COUNT).padStart(2, '0')}`, 'Boss03']
+    expect([...cardSlots(people, bosses)]).toEqual([...cardSlots(people, [...bosses].reverse())])
+  })
+
+  test('copes with more bosses on one card than there are colours', () => {
+    const people = many(SLOT_COUNT + 4)
+    const bosses = people.map((p) => p.directBoss)
+    const resolved = cardSlots(people, bosses)
+    expect(resolved.size).toBe(SLOT_COUNT + 4)
+    expect([...resolved.values()].every((s) => s >= 0 && s < SLOT_COUNT)).toBe(true)
+  })
+
+  test('ignores a blank boss, which has no team and stays neutral', () => {
+    const people = [member('Ana', ''), member('Dia', 'Ben')]
+    const resolved = cardSlots(people, ['', 'Ben'])
+    expect(resolved.has('')).toBe(false)
+    expect(resolved.get('Ben')).toBe(0)
   })
 })

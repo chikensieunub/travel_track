@@ -6,7 +6,7 @@ export const NO_BOSS = ''
 /** How many distinct colours the categorical palette offers. */
 export const SLOT_COUNT = 8
 
-/** Bosses beyond the palette share one neutral slot; colours are never cycled. */
+/** Used for the "no boss recorded" column, which is an absence rather than a team. */
 export const OTHER_SLOT = -1
 
 export interface BossGroup {
@@ -39,17 +39,47 @@ export function groupByBoss(members: Member[]): BossGroup[] {
 }
 
 /**
- * Map each boss to a fixed colour slot.
+ * Map each boss to their usual colour slot.
  *
  * Slots follow the boss's name, not the order they happen to appear in, so one
- * boss wears the same colour on every trip card and adding or removing people
- * never repaints anyone else.
+ * boss wears the same colour wherever possible and adding or removing people
+ * never repaints anyone else. Past the eighth boss the palette starts over -
+ * a shared colour across two cards reads far better than a grey column.
  */
 export function bossSlots(members: Member[]): Map<string, number> {
   const names = [...new Set(members.map((m) => m.directBoss.trim()).filter(Boolean))].sort((a, b) =>
     a.localeCompare(b),
   )
-  return new Map(names.map((name, index) => [name, index < SLOT_COUNT ? index : OTHER_SLOT]))
+  return new Map(names.map((name, index) => [name, index % SLOT_COUNT]))
+}
+
+/**
+ * Colours for the bosses appearing on one card.
+ *
+ * Each takes their usual slot; if that is already spoken for on this card, they
+ * shift to the next free one. So nobody is grey, no two teams on a card share a
+ * colour, and a boss only moves off their usual colour where it would clash.
+ */
+export function cardSlots(allMembers: Member[], bossesOnCard: string[]): Map<string, number> {
+  const base = bossSlots(allMembers)
+  const taken = new Set<number>()
+  const resolved = new Map<string, number>()
+
+  // Sorted so a card resolves the same way however its groups arrive.
+  const names = [...new Set(bossesOnCard.map((b) => b.trim()).filter(Boolean))].sort((a, b) => a.localeCompare(b))
+
+  for (const name of names) {
+    const want = base.get(name) ?? 0
+    let slot = want
+    for (let step = 0; step < SLOT_COUNT && taken.has(slot); step += 1) {
+      slot = (want + step + 1) % SLOT_COUNT
+    }
+    // With more teams on one card than colours, a repeat is unavoidable.
+    taken.add(slot)
+    resolved.set(name, slot)
+  }
+
+  return resolved
 }
 
 /** Board columns a trip card spans. Wider cards mean shorter ones. */

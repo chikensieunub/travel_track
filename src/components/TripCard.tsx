@@ -2,7 +2,7 @@ import { useState } from 'react'
 import type { AssignmentStatus, Member, TravelData, Trip } from '../store/types'
 import { formatRange } from '../store/derive'
 import { assignmentStatus, conflictsFor, membersOnTrip, membersOnTripByStatus } from '../store/operations'
-import { bossSlots, cardSpan, groupByBoss } from '../store/groupByBoss'
+import { cardSlots, cardSpan, groupByBoss } from '../store/groupByBoss'
 import { MemberPanel } from './MemberPanel'
 
 const STATUS_LABEL: Record<Trip['status'], string> = {
@@ -40,8 +40,15 @@ export function TripCard({
   const confirmed = membersOnTripByStatus(data, trip.id, 'confirmed')
   const tentative = membersOnTripByStatus(data, trip.id, 'tentative')
 
-  // Slots come from the whole roster, so a boss keeps one colour across every card.
-  const slots = bossSlots(data.members)
+  const confirmedGroups = groupByBoss(confirmed)
+  const tentativeGroups = groupByBoss(tentative)
+
+  // Resolved once for the whole card, so a boss looks the same in both panels
+  // and no two teams on this card share a colour.
+  const slots = cardSlots(
+    data.members,
+    [...confirmedGroups, ...tentativeGroups].map((g) => g.boss),
+  )
 
   /** Other trips each assignee is on that share a day with this one. */
   const conflictFor = (memberId: string): string | undefined =>
@@ -63,7 +70,7 @@ export function TripCard({
   }
 
   // Width follows how much there is to show, so busy trips get shorter, not narrower.
-  const groups = groupByBoss(confirmed).length + groupByBoss(tentative).length
+  const groups = confirmedGroups.length + tentativeGroups.length
   const span = cardSpan(assigned.length, groups)
 
   return (
