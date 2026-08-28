@@ -1,6 +1,7 @@
 import { useDroppable } from '@dnd-kit/core'
 import type { AssignmentStatus, Member } from '../store/types'
 import { NO_BOSS, OTHER_SLOT, groupByBoss } from '../store/groupByBoss'
+import { teamCoverage } from '../store/teamCoverage'
 import { AssignedMember } from './MemberChip'
 
 const people = (count: number): string => `${count} ${count === 1 ? 'member' : 'members'}`
@@ -14,6 +15,7 @@ export function MemberPanel({
   status,
   title,
   members,
+  allMembers,
   tripId,
   tripName,
   slots,
@@ -26,6 +28,8 @@ export function MemberPanel({
   status: AssignmentStatus
   title: string
   members: Member[]
+  /** The whole roster, so a team's size can be measured against it. */
+  allMembers: Member[]
   tripId: string
   tripName: string
   slots: Map<string, number>
@@ -41,6 +45,9 @@ export function MemberPanel({
   })
 
   const columns = groupByBoss(members)
+  // Coverage only makes sense for people who are actually going.
+  const showCoverage = status === 'confirmed'
+  const onTripIds = members.map((m) => m.id)
   const moveLabel = status === 'confirmed' ? 'Move down to tentative' : 'Move up to confirmed'
 
   return (
@@ -65,18 +72,39 @@ export function MemberPanel({
             const named = column.boss !== NO_BOSS
             const heading = named ? column.boss : 'No boss recorded'
             const slot = named ? (slots.get(column.boss) ?? OTHER_SLOT) : OTHER_SLOT
+            const cover = teamCoverage(allMembers, column.boss, onTripIds)
+            const label = showCoverage
+              ? `${heading}, ${cover.confirmed} of ${cover.teamSize} confirmed, ${cover.percent}%`
+              : `${heading}, ${people(column.members.length)}`
             return (
               <section
                 key={heading}
                 className="boss-column"
                 data-boss-slot={slot}
                 role="group"
-                aria-label={`${heading}, ${people(column.members.length)}`}
+                aria-label={label}
               >
                 <h5 className="boss-heading">
                   <span className="boss-name">{heading}</span>
-                  <span className="boss-count">{column.members.length}</span>
+                  {showCoverage ? (
+                    <span className="boss-ratio">
+                      <span className="boss-count">{`${cover.confirmed}/${cover.teamSize}`}</span>
+                      <span className="boss-percent">{`${cover.percent}%`}</span>
+                    </span>
+                  ) : (
+                    <span className="boss-count">{column.members.length}</span>
+                  )}
                 </h5>
+                {showCoverage && (
+                  <span
+                    className="coverage-meter"
+                    data-testid="coverage-meter"
+                    data-percent={cover.percent}
+                    aria-hidden="true"
+                  >
+                    <span className="coverage-fill" style={{ width: `${cover.percent}%` }} />
+                  </span>
+                )}
                 <ul className="chips">
                   {column.members.map((member) => (
                     <AssignedMember

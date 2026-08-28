@@ -695,10 +695,11 @@ table.preview tr:last-child td {
 
 .boss-heading {
   display: flex;
-  gap: 6px;
+  flex-wrap: wrap;
+  gap: 3px 6px;
   align-items: baseline;
   justify-content: space-between;
-  margin: 0 0 6px;
+  margin: 0 0 5px;
   font-size: 11px;
   text-transform: uppercase;
   letter-spacing: 0.04em;
@@ -710,6 +711,36 @@ table.preview tr:last-child td {
   color: var(--text);
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.boss-ratio {
+  display: flex;
+  flex: none;
+  gap: 5px;
+  align-items: baseline;
+}
+
+.boss-percent {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+/* A thin meter repeating the ratio; the numbers above carry the real value. */
+.coverage-meter {
+  display: block;
+  height: 3px;
+  margin: 0 0 7px;
+  overflow: hidden;
+  background: color-mix(in srgb, var(--muted) 22%, transparent);
+  border-radius: 999px;
+}
+
+.coverage-fill {
+  display: block;
+  height: 100%;
+  background: var(--boss);
+  border-radius: 999px;
 }
 
 /* Text keeps its own ink; the tinted pill and the top border carry identity. */

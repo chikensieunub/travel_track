@@ -93,6 +93,7 @@ export function TripCard({
         status="confirmed"
         title="Confirmed"
         members={confirmed}
+        allMembers={data.members}
         tripId={trip.id}
         tripName={trip.destination}
         slots={slots}
@@ -107,6 +108,7 @@ export function TripCard({
         status="tentative"
         title="Tentative"
         members={tentative}
+        allMembers={data.members}
         tripId={trip.id}
         tripName={trip.destination}
         slots={slots}

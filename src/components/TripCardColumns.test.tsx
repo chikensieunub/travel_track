@@ -85,7 +85,10 @@ describe('Trip card member columns', () => {
     await assignTo(user, 'Tokyo', 'Ana')
     await assignTo(user, 'Tokyo', 'Chen')
 
-    expect(within(card('Tokyo')).getByRole('group', { name: 'Ben Ortiz, 2 members' })).toBeInTheDocument()
+    // In the confirmed panel the count is a ratio against the boss's whole team.
+    expect(
+      within(card('Tokyo')).getByRole('group', { name: 'Ben Ortiz, 2 of 2 confirmed, 100%' }),
+    ).toBeInTheDocument()
   })
 
   test('names the boss on the column, so colour is never the only signal', async () => {

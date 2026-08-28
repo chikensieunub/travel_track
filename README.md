@@ -46,7 +46,14 @@ The app runs at http://localhost:5173.
   (**Move up** to bring them back). You can also drag someone straight into
   either panel. The headcount at the top counts both panels together.
 - **Who is on a trip** - each panel splits its people into a column per direct
-  boss, each column in its own colour with its own count. A boss keeps the same colour on every card, so you can scan the
+  boss, each column in its own colour. In **Confirmed**, a column's heading reads
+  as a ratio - `2/3 - 67%`, with a matching bar - meaning two of the three people
+  under that boss are confirmed on this trip. The denominator is the boss's whole
+  current team in the roster, not just the people on this trip, so it answers
+  "how much of that team is going". Leavers drop out of the team size, unless
+  they are still on the trip, so the figure never reads above 100%. The
+  **Tentative** panel keeps a plain count, since a ratio only means something for
+  people who are actually going. A boss keeps the same colour on every card, so you can scan the
   board and see whose team is covering what. Anyone with no boss recorded gets a
   grey column, last. Every column is headed by the boss's name, so the colours
   are a convenience, never the only way to read it - the palette is validated for
@@ -107,6 +114,7 @@ src/
     mergeMembers.ts      Folds imported rows in, keyed on domain name
     migrate.ts           Brings older stored data up to the current schema
     groupByBoss.ts       Boss columns, colour slots, and card width
+    teamCoverage.ts      How much of a boss's team is confirmed on a trip
     LocalStorageStore.ts TravelStore interface + browser-storage implementation
     context.ts           Store context and the useStore hook
     StoreProvider.tsx    Wires operations to persistence
