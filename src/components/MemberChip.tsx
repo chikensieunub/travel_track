@@ -23,18 +23,30 @@ export function RosterMember({ member, onEdit, onDelete }: { member: Member; onE
   )
 }
 
-/** A person already on a trip: draggable to another trip, removable in place. */
+/**
+ * A person on a trip. The grip drags them to another trip or panel; clicking
+ * the name selects them, which reveals the button that moves them between the
+ * confirmed and tentative panels.
+ */
 export function AssignedMember({
   member,
   tripId,
   tripName,
   conflict,
+  selected,
+  moveLabel,
+  onSelect,
+  onMove,
   onRemove,
 }: {
   member: Member
   tripId: string
   tripName: string
   conflict?: string
+  selected: boolean
+  moveLabel: string
+  onSelect: () => void
+  onMove: () => void
   onRemove: () => void
 }) {
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
@@ -42,22 +54,41 @@ export function AssignedMember({
     data: { type: 'assigned', memberId: member.id, fromTripId: tripId },
   })
 
+  const moving = moveLabel.startsWith('Move down')
+
   return (
     <li
-      className={`chip${conflict ? ' chip-conflict' : ''}${isDragging ? ' dragging' : ''}`}
+      className={`chip${conflict ? ' chip-conflict' : ''}${isDragging ? ' dragging' : ''}${selected ? ' chip-selected' : ''}`}
       aria-label={`${member.fullName} on ${tripName}${conflict ? `, clashes with ${conflict}` : ''}`}
     >
-      <span ref={setNodeRef} {...listeners} {...attributes} className="chip-grab">
-        {conflict && (
-          <span className="conflict-dot" title={`Also on ${conflict} during this trip`} aria-hidden="true">
-            !
-          </span>
-        )}
-        {member.fullName}
+      <span className="chip-row">
+        <span
+          ref={setNodeRef}
+          {...listeners}
+          {...attributes}
+          className="chip-grip"
+          aria-label={`Drag ${member.fullName} on ${tripName}`}
+        >
+          ⠿
+        </span>
+        <button className="chip-name" onClick={onSelect} aria-pressed={selected} aria-label={`Select ${member.fullName}`}>
+          {conflict && (
+            <span className="conflict-dot" title={`Also on ${conflict} during this trip`} aria-hidden="true">
+              !
+            </span>
+          )}
+          {member.fullName}
+        </button>
+        <button className="chip-remove" onClick={onRemove} aria-label={`Remove ${member.fullName} from ${tripName}`}>
+          ×
+        </button>
       </span>
-      <button className="chip-remove" onClick={onRemove} aria-label={`Remove ${member.fullName} from ${tripName}`}>
-        ×
-      </button>
+
+      {selected && (
+        <button className="chip-move" onClick={onMove}>
+          {moving ? '↓ Move down' : '↑ Move up'}
+        </button>
+      )}
     </li>
   )
 }

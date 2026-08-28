@@ -39,9 +39,14 @@ The app runs at http://localhost:5173.
   trip card to another to move them; drag them back to the roster to take them
   off. Every trip card also has an **+ Add member** menu, so nothing depends on
   being able to drag.
-- **Who is on a trip** - a trip card shows its total headcount, then splits the
-  people into a column per direct boss, each column in its own colour with its
-  own count. A boss keeps the same colour on every card, so you can scan the
+- **Confirmed and tentative** - each trip card holds two panels. **Confirmed**
+  are the people who are going; **Tentative** are the ones still under
+  discussion. Anyone you add starts confirmed. To move someone, click their name
+  to select them, then use the **Move down** button that appears on their card
+  (**Move up** to bring them back). You can also drag someone straight into
+  either panel. The headcount at the top counts both panels together.
+- **Who is on a trip** - each panel splits its people into a column per direct
+  boss, each column in its own colour with its own count. A boss keeps the same colour on every card, so you can scan the
   board and see whose team is covering what. Anyone with no boss recorded gets a
   grey column, last. Every column is headed by the boss's name, so the colours
   are a convenience, never the only way to read it - the palette is validated for
@@ -101,14 +106,15 @@ src/
     importMembers.ts     Header matching and row normalisation, pure
     mergeMembers.ts      Folds imported rows in, keyed on domain name
     migrate.ts           Brings older stored data up to the current schema
-    groupByBoss.ts       Boss columns and their stable colour slots
+    groupByBoss.ts       Boss columns, colour slots, and card width
     LocalStorageStore.ts TravelStore interface + browser-storage implementation
     context.ts           Store context and the useStore hook
     StoreProvider.tsx    Wires operations to persistence
   components/
     Board.tsx            Layout, filters, drag handling, clash warnings
     RosterPanel.tsx      Member list, search, drop-to-unassign target
-    TripCard.tsx         One trip, its people, and its drop target
+    TripCard.tsx         One trip, its two panels, and member selection
+    MemberPanel.tsx      Confirmed or tentative: the same component twice
     MemberChip.tsx       Draggable people, in the roster and on trips
     MemberForm.tsx       Add/edit a member
     ImportMembersDialog.tsx  File picker, column mapping, preview, confirm

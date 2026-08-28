@@ -1,9 +1,9 @@
-import { useDroppable } from '@dnd-kit/core'
-import type { Member, TravelData, Trip } from '../store/types'
+import { useState } from 'react'
+import type { AssignmentStatus, Member, TravelData, Trip } from '../store/types'
 import { formatRange } from '../store/derive'
-import { conflictsFor, membersOnTrip } from '../store/operations'
-import { NO_BOSS, OTHER_SLOT, bossSlots, cardSpan, groupByBoss } from '../store/groupByBoss'
-import { AssignedMember } from './MemberChip'
+import { assignmentStatus, conflictsFor, membersOnTrip, membersOnTripByStatus } from '../store/operations'
+import { bossSlots, cardSpan, groupByBoss } from '../store/groupByBoss'
+import { MemberPanel } from './MemberPanel'
 
 const STATUS_LABEL: Record<Trip['status'], string> = {
   planned: 'Planned',
@@ -18,6 +18,7 @@ export function TripCard({
   data,
   onAssign,
   onUnassign,
+  onSetStatus,
   onEdit,
   onDelete,
 }: {
@@ -25,33 +26,50 @@ export function TripCard({
   data: TravelData
   onAssign: (memberId: string) => void
   onUnassign: (memberId: string) => void
+  onSetStatus: (memberId: string, status: AssignmentStatus) => void
   onEdit: () => void
   onDelete: () => void
 }) {
-  const { setNodeRef, isOver } = useDroppable({ id: `trip:${trip.id}`, data: { type: 'trip', tripId: trip.id } })
+  // Selection is per card, so the same person on two trips is armed on only one.
+  const [selectedId, setSelectedId] = useState<string | null>(null)
 
   const assigned = membersOnTrip(data, trip.id)
   const assignedIds = new Set(assigned.map((m) => m.id))
   const available: Member[] = data.members.filter((m) => m.active && !assignedIds.has(m.id))
 
-  const columns = groupByBoss(assigned)
+  const confirmed = membersOnTripByStatus(data, trip.id, 'confirmed')
+  const tentative = membersOnTripByStatus(data, trip.id, 'tentative')
+
   // Slots come from the whole roster, so a boss keeps one colour across every card.
   const slots = bossSlots(data.members)
 
   /** Other trips each assignee is on that share a day with this one. */
-  const clashFor = (memberId: string): string | undefined =>
+  const conflictFor = (memberId: string): string | undefined =>
     conflictsFor(data, trip.id, memberId)
       .map((t) => t.destination)
       .join(', ') || undefined
 
+  const toggleSelect = (memberId: string) => setSelectedId((current) => (current === memberId ? null : memberId))
+
+  function move(memberId: string) {
+    const now = assignmentStatus(data, trip.id, memberId)
+    onSetStatus(memberId, now === 'confirmed' ? 'tentative' : 'confirmed')
+    setSelectedId(null)
+  }
+
+  function remove(memberId: string) {
+    if (selectedId === memberId) setSelectedId(null)
+    onUnassign(memberId)
+  }
+
   // Width follows how much there is to show, so busy trips get shorter, not narrower.
-  const span = cardSpan(assigned.length, columns.length)
+  const groups = groupByBoss(confirmed).length + groupByBoss(tentative).length
+  const span = cardSpan(assigned.length, groups)
 
   return (
     <article
-      ref={setNodeRef}
-      className={`trip-card status-${trip.status} span-${span}${isOver ? ' drop-target' : ''}`}
-      data-boss-groups={columns.length}
+      className={`trip-card status-${trip.status} span-${span}`}
+      data-boss-groups={groups}
       aria-label={trip.destination}
     >
       <header className="trip-head">
@@ -71,43 +89,33 @@ export function TripCard({
       {trip.purpose && <p className="trip-purpose">{trip.purpose}</p>}
       {trip.notes && <p className="trip-notes">{trip.notes}</p>}
 
-      {columns.length === 0 ? (
-        <p className="chips-empty">Drag people here</p>
-      ) : (
-        <div className="boss-columns">
-          {columns.map((column) => {
-            const named = column.boss !== NO_BOSS
-            const heading = named ? column.boss : 'No boss recorded'
-            const slot = named ? (slots.get(column.boss) ?? OTHER_SLOT) : OTHER_SLOT
-            return (
-              <section
-                key={heading}
-                className="boss-column"
-                data-boss-slot={slot}
-                role="group"
-                aria-label={`${heading}, ${people(column.members.length)}`}
-              >
-                <h4 className="boss-heading">
-                  <span className="boss-name">{heading}</span>
-                  <span className="boss-count">{column.members.length}</span>
-                </h4>
-                <ul className="chips">
-                  {column.members.map((member) => (
-                    <AssignedMember
-                      key={member.id}
-                      member={member}
-                      tripId={trip.id}
-                      tripName={trip.destination}
-                      conflict={clashFor(member.id)}
-                      onRemove={() => onUnassign(member.id)}
-                    />
-                  ))}
-                </ul>
-              </section>
-            )
-          })}
-        </div>
-      )}
+      <MemberPanel
+        status="confirmed"
+        title="Confirmed"
+        members={confirmed}
+        tripId={trip.id}
+        tripName={trip.destination}
+        slots={slots}
+        selectedId={selectedId}
+        conflictFor={conflictFor}
+        onSelect={toggleSelect}
+        onMove={move}
+        onRemove={remove}
+      />
+
+      <MemberPanel
+        status="tentative"
+        title="Tentative"
+        members={tentative}
+        tripId={trip.id}
+        tripName={trip.destination}
+        slots={slots}
+        selectedId={selectedId}
+        conflictFor={conflictFor}
+        onSelect={toggleSelect}
+        onMove={move}
+        onRemove={remove}
+      />
 
       <label className="visually-hidden" htmlFor={`add-${trip.id}`}>
         Add member to {trip.destination}

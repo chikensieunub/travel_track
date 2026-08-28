@@ -24,10 +24,15 @@ export interface Trip {
   notes: string
 }
 
+/** Whether someone is definitely going, or still under discussion. */
+export type AssignmentStatus = 'confirmed' | 'tentative'
+
 export interface Assignment {
   id: string
   tripId: string
   memberId: string
+  /** Absent on assignments written before statuses existed; read as confirmed. */
+  status?: AssignmentStatus
 }
 
 export interface TravelData {

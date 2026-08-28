@@ -13,7 +13,7 @@ import {
 import { useStore } from '../store/context'
 import { isPast } from '../store/derive'
 import { conflictsFor, emptyData } from '../store/operations'
-import type { Member, MemberDraft, TravelData, Trip, TripStatus } from '../store/types'
+import type { AssignmentStatus, Member, MemberDraft, TravelData, Trip, TripStatus } from '../store/types'
 import { RosterPanel } from './RosterPanel'
 import { TripCard } from './TripCard'
 import { MemberForm } from './MemberForm'
@@ -83,13 +83,18 @@ export function Board() {
 
   // --- assignment, with a non-blocking clash warning --------------------------
 
-  function place(tripId: string, memberId: string, fromTripId?: string) {
-    if (fromTripId === tripId) return
+  function place(tripId: string, memberId: string, fromTripId?: string, status: AssignmentStatus = 'confirmed') {
+    if (fromTripId === tripId) {
+      // Same trip, different panel: just change which list they sit in.
+      store.setAssignmentStatus(tripId, memberId, status)
+      return
+    }
     // Trips they are already on that share a day - ignoring the one they are leaving.
     const clashes = conflictsFor(data, tripId, memberId).filter((t) => t.id !== fromTripId)
 
     if (fromTripId) store.moveAssignment(fromTripId, tripId, memberId)
     else store.assign(tripId, memberId)
+    if (status !== 'confirmed') store.setAssignmentStatus(tripId, memberId, status)
 
     const member = data.members.find((m) => m.id === memberId)
     const trip = data.trips.find((t) => t.id === tripId)
@@ -132,7 +137,12 @@ export function Board() {
     if (!active || !over) return
 
     if (over.type === 'trip') {
-      place(over.tripId as string, active.memberId as string, active.fromTripId as string | undefined)
+      place(
+        over.tripId as string,
+        active.memberId as string,
+        active.fromTripId as string | undefined,
+        (over.status as AssignmentStatus | undefined) ?? 'confirmed',
+      )
     } else if (over.type === 'roster' && active.type === 'assigned') {
       store.unassign(active.fromTripId as string, active.memberId as string)
       setClash(null)
@@ -185,6 +195,7 @@ export function Board() {
               data={data}
               onAssign={(memberId) => place(trip.id, memberId)}
               onUnassign={(memberId) => store.unassign(trip.id, memberId)}
+              onSetStatus={(memberId, status) => store.setAssignmentStatus(trip.id, memberId, status)}
               onEdit={() => setTripForm({ open: true, trip })}
               onDelete={() => deleteTrip(trip)}
             />

@@ -1,4 +1,4 @@
-import type { Member, MemberV1, TravelData } from './types'
+import type { Assignment, Member, MemberV1, TravelData } from './types'
 import { SCHEMA_VERSION } from './operations'
 
 /**
@@ -17,24 +17,32 @@ function memberFromV1(old: MemberV1): Member {
   }
 }
 
-/** Bring stored data up to the current schema. Trips and assignments never change. */
+/** Anyone already on a trip was planned in, so they start out confirmed. */
+function assignmentToV3(old: Assignment): Assignment {
+  return { ...old, status: old.status ?? 'confirmed' }
+}
+
+/**
+ * Bring stored data up to the current schema, one step at a time.
+ *
+ * Each step is applied only when the data predates it, so upgrading the schema
+ * can never re-run an earlier step over already-converted data.
+ */
 export function migrate(stored: unknown): TravelData {
   const data = stored as Partial<TravelData> & { members?: unknown[] }
   const version = data.schemaVersion ?? 1
 
-  if (version >= SCHEMA_VERSION) {
-    return {
-      schemaVersion: SCHEMA_VERSION,
-      members: (data.members ?? []) as Member[],
-      trips: data.trips ?? [],
-      assignments: data.assignments ?? [],
-    }
-  }
+  const members =
+    version < 2
+      ? ((data.members ?? []) as MemberV1[]).map(memberFromV1)
+      : ((data.members ?? []) as Member[])
+
+  const assignments = (data.assignments ?? []).map(assignmentToV3)
 
   return {
     schemaVersion: SCHEMA_VERSION,
-    members: ((data.members ?? []) as MemberV1[]).map(memberFromV1),
+    members,
     trips: data.trips ?? [],
-    assignments: data.assignments ?? [],
+    assignments,
   }
 }

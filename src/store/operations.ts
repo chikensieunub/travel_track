@@ -1,7 +1,7 @@
-import type { Assignment, Member, MemberDraft, TravelData, Trip } from './types'
+import type { Assignment, AssignmentStatus, Member, MemberDraft, TravelData, Trip } from './types'
 import { tripOverlaps } from './derive'
 
-export const SCHEMA_VERSION = 2
+export const SCHEMA_VERSION = 3
 
 const newId = (): string =>
   typeof crypto !== 'undefined' && crypto.randomUUID
@@ -84,11 +84,40 @@ export function deleteTrip(data: TravelData, id: string): TravelData {
 const has = (data: TravelData, tripId: string, memberId: string): boolean =>
   data.assignments.some((a) => a.tripId === tripId && a.memberId === memberId)
 
-export function assign(data: TravelData, tripId: string, memberId: string): TravelData {
+export function assign(
+  data: TravelData,
+  tripId: string,
+  memberId: string,
+  status: AssignmentStatus = 'confirmed',
+): TravelData {
   const known = data.trips.some((t) => t.id === tripId) && data.members.some((m) => m.id === memberId)
-  if (!known || has(data, tripId, memberId)) return data
-  const assignment: Assignment = { id: newId(), tripId, memberId }
+  if (!known) return data
+  // Already on the trip: treat this as a change of status rather than a duplicate.
+  if (has(data, tripId, memberId)) return setAssignmentStatus(data, tripId, memberId, status)
+  const assignment: Assignment = { id: newId(), tripId, memberId, status }
   return { ...data, assignments: [...data.assignments, assignment] }
+}
+
+/** Move someone between the confirmed and tentative lists for one trip. */
+export function setAssignmentStatus(
+  data: TravelData,
+  tripId: string,
+  memberId: string,
+  status: AssignmentStatus,
+): TravelData {
+  if (!has(data, tripId, memberId)) return data
+  return {
+    ...data,
+    assignments: data.assignments.map((a) =>
+      a.tripId === tripId && a.memberId === memberId ? { ...a, status } : a,
+    ),
+  }
+}
+
+/** Someone's status on a trip. Assignments written before statuses read as confirmed. */
+export function assignmentStatus(data: TravelData, tripId: string, memberId: string): AssignmentStatus {
+  const found = data.assignments.find((a) => a.tripId === tripId && a.memberId === memberId)
+  return found?.status ?? 'confirmed'
 }
 
 export function unassign(data: TravelData, tripId: string, memberId: string): TravelData {
@@ -107,6 +136,16 @@ export function moveAssignment(data: TravelData, fromTripId: string, toTripId: s
 
 export function membersOnTrip(data: TravelData, tripId: string): Member[] {
   const ids = new Set(data.assignments.filter((a) => a.tripId === tripId).map((a) => a.memberId))
+  return data.members.filter((m) => ids.has(m.id))
+}
+
+/** Everyone on a trip with the given status. */
+export function membersOnTripByStatus(data: TravelData, tripId: string, status: AssignmentStatus): Member[] {
+  const ids = new Set(
+    data.assignments
+      .filter((a) => a.tripId === tripId && (a.status ?? 'confirmed') === status)
+      .map((a) => a.memberId),
+  )
   return data.members.filter((m) => ids.has(m.id))
 }
 

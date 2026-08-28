@@ -38,6 +38,8 @@ export function StoreProvider({ children, store }: { children: ReactNode; store?
       assign: (tripId, memberId) => apply((d) => ops.assign(d, tripId, memberId)),
       unassign: (tripId, memberId) => apply((d) => ops.unassign(d, tripId, memberId)),
       moveAssignment: (from, to, memberId) => apply((d) => ops.moveAssignment(d, from, to, memberId)),
+      setAssignmentStatus: (tripId, memberId, status) =>
+        apply((d) => ops.setAssignmentStatus(d, tripId, memberId, status)),
       importMembers: (drafts) => apply((d) => mergeMembers(d, drafts).data),
       replaceAll: (next) => apply(() => next),
     }),
