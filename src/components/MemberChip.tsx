@@ -1,5 +1,6 @@
 import { useDraggable } from '@dnd-kit/core'
 import type { Member } from '../store/types'
+import { isBoss } from '../store/boss'
 
 /** A person in the roster, draggable onto a trip card. */
 export function RosterMember({ member, onEdit, onDelete }: { member: Member; onEdit: () => void; onDelete: () => void }) {
@@ -15,7 +16,11 @@ export function RosterMember({ member, onEdit, onDelete }: { member: Member; onE
       </span>
       <span className="roster-member-text">
         <strong>{member.fullName}</strong>
-        <small>{[member.location, member.directBoss && `→ ${member.directBoss}`].filter(Boolean).join(' · ') || member.domainName}</small>
+        <small>
+          {isBoss(member) && <span className="boss-tag">Boss</span>}
+          {[member.location, member.directBoss && `→ ${member.directBoss}`].filter(Boolean).join(' · ') ||
+            (isBoss(member) ? '' : member.domainName)}
+        </small>
       </span>
       <button className="icon" onClick={onEdit} aria-label={`Edit ${member.fullName}`}>✎</button>
       <button className="icon" onClick={onDelete} aria-label={`Delete ${member.fullName}`}>×</button>

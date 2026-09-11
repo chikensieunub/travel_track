@@ -45,7 +45,10 @@ The app runs at http://localhost:5173.
   confirmed and tentative. **Who this is comes from `BOSS_NAME` in
   `src/store/boss.ts`** - matched on full name, which is deliberately temporary:
   two people can share a name, and the proper fix is a flag on the member record.
-  Change that one value to point the panel at someone else.
+  Change that one value to point the panel at someone else. He needs no direct
+  boss of his own — having nobody above him is the normal case — and he is tagged
+  **Boss** in the Members list, which doubles as a check: if that tag is missing,
+  the name stored in the roster does not match `BOSS_NAME`.
 - **Left the company** - a third panel appears on a card when someone on that
   trip is marked as having left. It is worked out from the roster rather than
   stored, so unticking "Currently on the team" moves that person on every trip

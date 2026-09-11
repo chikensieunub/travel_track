@@ -113,3 +113,47 @@ describe('The boss panel', () => {
     expect(within(card()).queryByRole('group', { name: /^Boss/ })).not.toBeInTheDocument()
   })
 })
+
+describe('The boss has nobody above him', () => {
+  beforeEach(() => localStorage.clear())
+
+  /** He reports to no one, so his direct boss is blank - the real situation. */
+  async function setupBossWithNoBoss(user: User, others: string[] = []) {
+    render(<App />)
+    await addMember(user, BOSS_NAME, '')
+    for (const name of others) await addMember(user, name, 'MINHND')
+    await user.click(screen.getByRole('button', { name: 'Add trip' }))
+    await user.type(screen.getByLabelText('Destination'), 'Tokyo')
+    await user.click(screen.getByRole('button', { name: 'Save trip' }))
+    await user.selectOptions(within(card()).getByLabelText('Add member to Tokyo'), BOSS_NAME)
+    for (const name of others) {
+      await user.selectOptions(within(card()).getByLabelText('Add member to Tokyo'), name)
+    }
+  }
+
+  test('still gets the boss panel when he reports to nobody', async () => {
+    const user = userEvent.setup()
+    await setupBossWithNoBoss(user)
+    expect(within(bossPanel()).getByText(BOSS_NAME)).toBeInTheDocument()
+  })
+
+  test('does not fall into the "no boss recorded" column', async () => {
+    const user = userEvent.setup()
+    await setupBossWithNoBoss(user, ['Ana'])
+    expect(within(card()).queryByRole('group', { name: /No boss recorded/ })).not.toBeInTheDocument()
+  })
+
+  test('leaves the other teams alone', async () => {
+    const user = userEvent.setup()
+    await setupBossWithNoBoss(user, ['Ana'])
+    const column = within(confirmed()).getByRole('group', { name: /^MINHND/ })
+    expect(within(column).getByText('Ana')).toBeInTheDocument()
+  })
+
+  test('is marked as the boss in the member list too', async () => {
+    const user = userEvent.setup()
+    await setupBossWithNoBoss(user)
+    const entry = within(roster()).getByText(BOSS_NAME).closest('li')!
+    expect(within(entry).getByText('Boss')).toBeInTheDocument()
+  })
+})

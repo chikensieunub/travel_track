@@ -922,3 +922,16 @@ table.preview tr:last-child td {
 .member-panel .chips-empty {
   margin: 0;
 }
+
+/* Doubles as a check: if this tag is missing, the stored name does not match. */
+.boss-tag {
+  padding: 0 5px;
+  margin-right: 5px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--accent);
+  background: var(--accent-soft);
+  border-radius: 3px;
+}
