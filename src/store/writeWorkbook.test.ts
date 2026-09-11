@@ -27,14 +27,13 @@ describe('workbookSheet', () => {
     const sheet = workbookSheet(exportRows(built()))
     const values = sheet[1].map((cell) => cell.value)
     expect(values[0]).toBe('Tokyo')
-    expect(values[3]).toBe(7)
-    expect(values[6]).toBe('Ana Cruz')
-    expect(values[10]).toBe('Confirmed')
+    expect(values[1]).toBe('Ana Cruz')
+    expect(values[5]).toBe('Confirmed')
   })
 
-  test('writes the day count as a number, so Excel can total it', () => {
-    const sheet = workbookSheet(exportRows(built()))
-    expect(sheet[1][3].type).toBe(Number)
+  test('writes a numeric value as a number, so Excel can total it', () => {
+    const sheet = workbookSheet([{ ...exportRows(built())[0], destination: 42 as unknown as string }])
+    expect(sheet[1][0].type).toBe(Number)
   })
 
   test('writes text columns as text', () => {

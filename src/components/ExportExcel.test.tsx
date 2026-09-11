@@ -99,6 +99,20 @@ describe('Exporting to Excel', () => {
     expect(grid).toHaveLength(3) // heading + Ana + Chen
   })
 
+  test('the sheet holds only the columns asked for', async () => {
+    const user = userEvent.setup()
+    await setupAndExport(user)
+    const grid = await readSheetFrom(download.captured[0].blob)
+    expect(grid[0].map(String)).toEqual([
+      'Destination',
+      'Member',
+      'Domain name',
+      'Direct boss',
+      'Location',
+      'On trip',
+    ])
+  })
+
   test('the rows carry the trip, the person and their confirmed status', async () => {
     const user = userEvent.setup()
     await setupAndExport(user)
@@ -110,8 +124,9 @@ describe('Exporting to Excel', () => {
 
     const ana = rows.find((r) => r[col('Member')] === 'Ana')!
     expect(ana[col('Destination')]).toBe('Tokyo')
-    expect(ana[col('Days')]).toBe(7)
     expect(ana[col('Direct boss')]).toBe('Ben Ortiz')
+    // Nothing was recorded for her location, so the cell comes back empty.
+    expect(ana[col('Location')]).toBeNull()
     expect(ana[col('On trip')]).toBe('Confirmed')
 
     const chen = rows.find((r) => r[col('Member')] === 'Chen')!

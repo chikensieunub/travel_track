@@ -142,8 +142,11 @@ work.
 ## Exporting to Excel
 
 **Export to Excel** writes one sheet, one row per person per trip: the trip's
-destination, dates, duration, status and purpose, then the person's name, domain
-name, direct boss and location, and whether they are confirmed or tentative.
+destination, then the person's name, domain name, direct boss and location, and
+where they stand on that trip — Boss, Confirmed, Tentative or Left the company.
+
+The rows are built from everyone assigned to a trip rather than panel by panel,
+so nobody can fall between the panels' rules and be missing from the report.
 
 That shape is deliberately flat rather than a picture of the board, because it is
 the one Excel is good at — sort it, filter it, or pivot it into headcount by

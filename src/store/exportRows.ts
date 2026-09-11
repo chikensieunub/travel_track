@@ -1,14 +1,9 @@
-import type { AssignmentStatus, TravelData, Trip, TripStatus } from './types'
-import { endDate } from './derive'
-import { membersOnTripByStatus } from './operations'
+import type { Member, TravelData } from './types'
+import { assignmentStatus, membersOnTrip } from './operations'
+import { isBoss } from './boss'
 
 export interface ExportRow {
   destination: string
-  startDate: string
-  endDate: string
-  durationDays: number
-  tripStatus: string
-  purpose: string
   fullName: string
   domainName: string
   directBoss: string
@@ -18,36 +13,30 @@ export interface ExportRow {
 }
 
 export const EXPORT_COLUMNS: { key: keyof ExportRow & string; label: string; width: number }[] = [
-  { key: 'destination', label: 'Destination', width: 20 },
-  { key: 'startDate', label: 'Start date', width: 12 },
-  { key: 'endDate', label: 'End date', width: 12 },
-  { key: 'durationDays', label: 'Days', width: 6 },
-  { key: 'tripStatus', label: 'Trip status', width: 12 },
-  { key: 'purpose', label: 'Purpose', width: 24 },
-  { key: 'fullName', label: 'Member', width: 24 },
+  { key: 'destination', label: 'Destination', width: 22 },
+  { key: 'fullName', label: 'Member', width: 26 },
   { key: 'domainName', label: 'Domain name', width: 22 },
   { key: 'directBoss', label: 'Direct boss', width: 18 },
   { key: 'location', label: 'Location', width: 16 },
   { key: 'onTrip', label: 'On trip', width: 12 },
 ]
 
-const TRIP_STATUS: Record<TripStatus, string> = { planned: 'Planned', confirmed: 'Confirmed', done: 'Done' }
-const ON_TRIP: Record<AssignmentStatus, string> = { confirmed: 'Confirmed', tentative: 'Tentative' }
+/** How the sheet describes someone's place on a trip, matching the card's panels. */
+const ORDER = ['Boss', 'Confirmed', 'Tentative', 'Left the company']
 
-const tripPart = (trip: Trip) => ({
-  destination: trip.destination,
-  startDate: trip.startDate,
-  endDate: endDate(trip),
-  durationDays: trip.durationDays,
-  tripStatus: TRIP_STATUS[trip.status],
-  purpose: trip.purpose,
-})
+function standing(data: TravelData, tripId: string, member: Member): string {
+  if (isBoss(member)) return 'Boss'
+  if (!member.active) return 'Left the company'
+  return assignmentStatus(data, tripId, member.id) === 'tentative' ? 'Tentative' : 'Confirmed'
+}
 
 /**
  * Flatten the tracker to one row per person per trip.
  *
+ * Built from everyone assigned to the trip rather than from each panel in turn,
+ * so nobody can fall between the panels' rules and be left out of the report.
  * A trip nobody is on still produces a row with the people columns blank, so an
- * empty trip cannot silently vanish from the export.
+ * empty trip cannot silently vanish either.
  */
 export function exportRows(data: TravelData): ExportRow[] {
   const trips = [...data.trips].sort(
@@ -55,23 +44,23 @@ export function exportRows(data: TravelData): ExportRow[] {
   )
 
   return trips.flatMap((trip) => {
-    const rowsFor = (status: AssignmentStatus): ExportRow[] =>
-      membersOnTripByStatus(data, trip.id, status)
-        .slice()
-        .sort((a, b) => a.directBoss.localeCompare(b.directBoss) || a.fullName.localeCompare(b.fullName))
-        .map((member) => ({
-          ...tripPart(trip),
-          fullName: member.fullName,
-          domainName: member.domainName,
-          directBoss: member.directBoss,
-          location: member.location,
-          onTrip: ON_TRIP[status],
-        }))
+    const rows = membersOnTrip(data, trip.id)
+      .map((member) => ({
+        destination: trip.destination,
+        fullName: member.fullName,
+        domainName: member.domainName,
+        directBoss: member.directBoss,
+        location: member.location,
+        onTrip: standing(data, trip.id, member),
+      }))
+      .sort(
+        (a, b) =>
+          ORDER.indexOf(a.onTrip) - ORDER.indexOf(b.onTrip) ||
+          a.directBoss.localeCompare(b.directBoss) ||
+          a.fullName.localeCompare(b.fullName),
+      )
 
-    // Confirmed first, then tentative - the same order the card reads in.
-    const rows = [...rowsFor('confirmed'), ...rowsFor('tentative')]
     if (rows.length > 0) return rows
-
-    return [{ ...tripPart(trip), fullName: '', domainName: '', directBoss: '', location: '', onTrip: '' }]
+    return [{ destination: trip.destination, fullName: '', domainName: '', directBoss: '', location: '', onTrip: '' }]
   })
 }
