@@ -13,6 +13,8 @@ import {
 import { useStore } from '../store/context'
 import { isPast } from '../store/derive'
 import { conflictsFor, emptyData } from '../store/operations'
+import { exportRows } from '../store/exportRows'
+import { workbookColumns, workbookSheet } from '../store/writeWorkbook'
 import type { AssignmentStatus, Member, MemberDraft, TravelData, Trip, TripStatus } from '../store/types'
 import { RosterPanel } from './RosterPanel'
 import { TripCard } from './TripCard'
@@ -151,8 +153,8 @@ export function Board() {
 
   // --- import / export --------------------------------------------------------
 
-  function download(text: string, filename: string) {
-    const url = URL.createObjectURL(new Blob([text], { type: 'application/json' }))
+  function offer(blob: Blob, filename: string) {
+    const url = URL.createObjectURL(blob)
     const link = document.createElement('a')
     link.href = url
     link.download = filename
@@ -160,10 +162,25 @@ export function Board() {
     URL.revokeObjectURL(url)
   }
 
+  const download = (text: string, filename: string) =>
+    offer(new Blob([text], { type: 'application/json' }), filename)
+
+  /** The whole tracker as a flat sheet: one row per person per trip. */
+  async function exportExcel() {
+    const { default: writeXlsxFile } = await import('write-excel-file/browser')
+    const blob = await writeXlsxFile(workbookSheet(exportRows(data)), {
+      columns: workbookColumns(),
+      sheet: 'Travel',
+    }).toBlob()
+    offer(blob, `travel-tracker-${today}.xlsx`)
+  }
+
   async function importJson(file: File) {
     try {
       const parsed = JSON.parse(await file.text()) as TravelData
       if (!Array.isArray(parsed.members) || !Array.isArray(parsed.trips)) throw new Error('bad shape')
+      const summary = `${parsed.members.length} members and ${parsed.trips.length} trips`
+      if (!window.confirm(`Restore from this backup? It replaces everything currently here with ${summary}.`)) return
       store.replaceAll({ ...emptyData(), ...parsed, assignments: parsed.assignments ?? [] })
     } catch {
       window.alert('That file is not a travel tracker export.')
@@ -211,16 +228,27 @@ export function Board() {
         <header className="app-head">
           <h1>Travel Tracker</h1>
           <div className="app-actions">
-            <button onClick={() => download(JSON.stringify(data, null, 2), `travel-tracker-${today}.json`)}>
-              Export
+            <button className="primary" onClick={() => void exportExcel()}>
+              Export to Excel
             </button>
-            <button onClick={() => importRef.current?.click()}>Import</button>
+            <button
+              title="Save a JSON copy of everything - members, trips and assignments"
+              onClick={() => download(JSON.stringify(data, null, 2), `travel-tracker-${today}.json`)}
+            >
+              Back up
+            </button>
+            <button
+              title="Replace everything with a JSON backup"
+              onClick={() => importRef.current?.click()}
+            >
+              Restore
+            </button>
             <input
               ref={importRef}
               type="file"
               accept="application/json"
               className="visually-hidden"
-              aria-label="Import data file"
+              aria-label="Backup file to restore"
               onChange={(e) => {
                 const file = e.target.files?.[0]
                 if (file) void importJson(file)
