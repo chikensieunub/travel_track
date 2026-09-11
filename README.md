@@ -72,7 +72,7 @@ The app runs at http://localhost:5173.
 
 ## Importing members from Excel
 
-**Members → Import members** reads an `.xlsx` file. Row one must be your column
+**Members → Import from Excel** reads an `.xlsx` file. Row one must be your column
 headings; `sample-members.xlsx` in this folder shows the shape.
 
 Headings are matched for you - `Domain Name`, `Username`, `Manager`, `Office`
@@ -93,14 +93,37 @@ and **nothing touches the roster until you press Import**.
 Whether someone is marked as having left is a decision made in the app, so an
 import never silently reactivates them.
 
+## Exporting to Excel
+
+**Export to Excel** writes one sheet, one row per person per trip: the trip's
+destination, dates, duration, status and purpose, then the person's name, domain
+name, direct boss and location, and whether they are confirmed or tentative.
+
+That shape is deliberately flat rather than a picture of the board, because it is
+the one Excel is good at — sort it, filter it, or pivot it into headcount by
+destination, by team, or by month. A trip with nobody on it still gets a row with
+the people columns blank, so an empty trip cannot quietly disappear.
+
+It always exports everything, whatever the on-screen filters are showing, so an
+export is never silently missing trips you had filtered out.
+
 ## Your data
 
 Everything lives in your browser's local storage under `travel-tracker/v1`.
 Nothing is sent anywhere.
 
-**Export** writes a JSON file — that is your backup, and how you hand the data to
-someone else or move it to a hosted version later. **Import** replaces everything
-with the contents of such a file.
+The toolbar keeps its buttons apart by what they do, not by file type:
+
+| Button | Format | Effect |
+| --- | --- | --- |
+| **Export to Excel** | `.xlsx` | Read-only report of everything, for sharing |
+| **Back up** | `.json` | Complete copy: members, trips and who is on them |
+| **Restore** | `.json` | **Replaces everything** with a backup — asks first |
+| **Import from Excel** (Members panel) | `.xlsx` | Merges people into the roster |
+
+Back up is what you keep; it is also how you move to a hosted version later.
+Restore is the only button that can lose data, so it names what it is about to
+load and waits for you to confirm.
 
 If the stored data is ever unreadable, the app starts empty and offers the
 unreadable text as a download rather than overwriting it.
@@ -119,6 +142,8 @@ src/
     migrate.ts           Brings older stored data up to the current schema
     groupByBoss.ts       Boss columns, colour slots, and card width
     teamCoverage.ts      How much of a boss's team is confirmed on a trip
+    exportRows.ts        Flattens everything to one row per person per trip
+    writeWorkbook.ts     Turns those rows into spreadsheet cells
     LocalStorageStore.ts TravelStore interface + browser-storage implementation
     context.ts           Store context and the useStore hook
     StoreProvider.tsx    Wires operations to persistence
@@ -146,4 +171,4 @@ an `ApiStore` implementing that same interface and pass it to `StoreProvider`:
 <StoreProvider store={new ApiStore('https://…')}>
 ```
 
-No component changes; the existing data moves across via Export/Import.
+No component changes; the existing data moves across via Back up / Restore.
