@@ -165,7 +165,11 @@ install, no server and no internet.
 
 To ship it carrying your current board, press **Back up** in the app and save the
 downloaded file over `src/store/seedData.json`, then build. Whoever opens it
-starts from that data. The build prints what it is about to bake in.
+starts from that data. The build prints what it is about to bake in, and then
+checks that every one of those trips is really on screen before writing the file.
+
+That seed file is **not committed** - it holds real people's names. A fresh clone
+starts from `seedData.example.json`, which is empty.
 
 The build checks its own output before finishing: it loads the file the way a
 browser would and confirms the app comes up, once normally and once with storage

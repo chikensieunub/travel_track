@@ -24,3 +24,6 @@ dist-ssr
 *.sw?
 standalone
 travel-tracker.html
+
+# Baked-in board for standalone builds - real people, not for the repo
+src/store/seedData.json
