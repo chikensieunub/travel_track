@@ -935,3 +935,17 @@ table.preview tr:last-child td {
   background: var(--accent-soft);
   border-radius: 3px;
 }
+
+/* So it is never in doubt which build a page is running. */
+.build-tag {
+  padding: 2px 6px;
+  margin-left: 10px;
+  font-family: ui-monospace, Consolas, monospace;
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--muted);
+  vertical-align: middle;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+}

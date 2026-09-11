@@ -228,7 +228,12 @@ export function Board() {
     <DndContext sensors={sensors} collisionDetection={closestCenter} onDragStart={onDragStart} onDragEnd={onDragEnd}>
       <div className="app">
         <header className="app-head">
-          <h1>Travel Tracker</h1>
+          <h1>
+            Travel Tracker
+            <span className="build-tag" title="Which build this page is running">
+              {__APP_BUILD__}
+            </span>
+          </h1>
           <div className="app-actions">
             <button className="primary" onClick={() => void exportExcel()}>
               Export to Excel
