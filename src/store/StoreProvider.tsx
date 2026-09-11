@@ -1,6 +1,7 @@
 import { useCallback, useMemo, useState, type ReactNode } from 'react'
 import type { TravelData } from './types'
-import { LocalStorageStore, type TravelStore } from './LocalStorageStore'
+import { type TravelStore } from './LocalStorageStore'
+import { createStore } from './createStore'
 import { StoreCtx, type StoreValue } from './context'
 import * as ops from './operations'
 import { mergeMembers } from './mergeMembers'
@@ -9,8 +10,9 @@ import { absorbStrays, removeUnusedLeavers } from './tidyLeavers'
 
 export function StoreProvider({ children, store }: { children: ReactNode; store?: TravelStore }) {
   // Lazy initialisers so the backend is constructed and read exactly once.
-  const [backend] = useState<TravelStore>(() => store ?? new LocalStorageStore())
+  const [backend] = useState<TravelStore>(() => store ?? createStore())
   const [initial] = useState(() => backend.load())
+  const persistent = initial.persistent
   const [data, setData] = useState<TravelData>(initial.data)
   const [recovered, setRecovered] = useState<string | undefined>(initial.recovered)
 
@@ -30,6 +32,7 @@ export function StoreProvider({ children, store }: { children: ReactNode; store?
     () => ({
       data,
       recovered,
+      persistent,
       dismissRecovered: () => setRecovered(undefined),
       addMember: (input) => apply((d) => ops.addMember(d, input)),
       updateMember: (id, patch) => apply((d) => ops.updateMember(d, id, patch)),
@@ -48,7 +51,7 @@ export function StoreProvider({ children, store }: { children: ReactNode; store?
       tidyLeavers: () => apply((d) => removeUnusedLeavers(absorbStrays(d).data).data),
       replaceAll: (next) => apply(() => next),
     }),
-    [data, recovered, apply],
+    [data, recovered, persistent, apply],
   )
 
   return <StoreCtx.Provider value={value}>{children}</StoreCtx.Provider>

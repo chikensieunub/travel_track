@@ -1,6 +1,7 @@
 import type { TravelData } from './types'
 import { emptyData } from './operations'
 import { migrate } from './migrate'
+import { seedData } from './seed'
 
 export const STORAGE_KEY = 'travel-tracker/v1'
 
@@ -8,6 +9,8 @@ export interface LoadResult {
   data: TravelData
   /** Raw text of stored data we could not read, so the user can rescue it instead of losing it. */
   recovered?: string
+  /** False when changes will be lost the moment the page closes. */
+  persistent: boolean
 }
 
 /** Persistence contract. Swap in an API-backed implementation to share data across a team. */
@@ -23,7 +26,8 @@ function isRecordArray(value: unknown): boolean {
 export class LocalStorageStore implements TravelStore {
   load(): LoadResult {
     const raw = localStorage.getItem(STORAGE_KEY)
-    if (raw === null) return { data: emptyData() }
+    // Nothing saved yet: a standalone copy starts from whatever was baked in.
+    if (raw === null) return { data: seedData() ?? emptyData(), persistent: true }
     try {
       const parsed = JSON.parse(raw) as Partial<TravelData>
       if (typeof parsed !== 'object' || parsed === null) throw new Error('not an object')
@@ -31,10 +35,10 @@ export class LocalStorageStore implements TravelStore {
         if (parsed[key] !== undefined && !isRecordArray(parsed[key])) throw new Error(`bad ${key}`)
       }
       // Older stored shapes are brought forward rather than rejected.
-      return { data: migrate(parsed) }
+      return { data: migrate(parsed), persistent: true }
     } catch {
       // Leave the bad value in place - overwriting it would destroy the only copy.
-      return { data: emptyData(), recovered: raw }
+      return { data: emptyData(), recovered: raw, persistent: true }
     }
   }
 

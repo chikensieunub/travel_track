@@ -7,6 +7,8 @@ export interface StoreValue {
   data: TravelData
   /** Raw text of stored data that could not be read, if any. */
   recovered?: string
+  /** False when the browser refuses storage and changes will vanish on close. */
+  persistent: boolean
   dismissRecovered(): void
   addMember(input: ops.NewMember): void
   updateMember(id: string, patch: Parameters<typeof ops.updateMember>[2]): void

@@ -23,6 +23,7 @@ From a terminal, `npm start` does the same thing.
 | `npm run test:watch` | Re-run tests as you edit |
 | `npm run build` | Typecheck and produce `dist/` |
 | `npm run lint` | Lint the source |
+| `npm run standalone` | Build the one-file `travel-tracker.html` to send to people |
 
 The app runs at http://localhost:5173.
 
@@ -155,6 +156,29 @@ the people columns blank, so an empty trip cannot quietly disappear.
 
 It always exports everything, whatever the on-screen filters are showing, so an
 export is never silently missing trips you had filtered out.
+
+## Sending it to someone
+
+`npm run standalone` writes **`travel-tracker.html`**: the whole app in one file,
+about 400 KB. Email it, or drop it on a shared drive. Opening it needs no
+install, no server and no internet.
+
+To ship it carrying your current board, press **Back up** in the app and save the
+downloaded file over `src/store/seedData.json`, then build. Whoever opens it
+starts from that data. The build prints what it is about to bake in.
+
+The build checks its own output before finishing: it loads the file the way a
+browser would and confirms the app comes up, once normally and once with storage
+refused, which is what a page opened straight off disk can hit. If either fails
+it refuses to write the file.
+
+**Everyone who opens it gets their own copy.** Their edits stay on their machine
+and never come back to you, which is right for "here is the picture, have a
+look" and wrong for keeping a shared list up to date. That needs a real backend.
+
+If a browser refuses storage for a file opened off disk, the app still works and
+says so plainly at the top - it just cannot remember anything between openings,
+so Back up and Export to Excel are the way out.
 
 ## Your data
 

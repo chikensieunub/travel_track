@@ -267,6 +267,15 @@ export function Board() {
           </div>
         </header>
 
+        {!store.persistent && (
+          <div role="alert" className="banner banner-warn">
+            <span>
+              This copy cannot be saved — your browser is not allowing storage here. Everything works, but closing
+              the tab loses it. Use <b>Export to Excel</b> or <b>Back up</b> before you go.
+            </span>
+          </div>
+        )}
+
         {store.recovered !== undefined && (
           <div className="banner">
             <span>Saved data could not be read, so the app started empty. Your original data is untouched.</span>
