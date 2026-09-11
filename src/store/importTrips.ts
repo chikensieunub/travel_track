@@ -24,7 +24,15 @@ export interface ApplyResult {
 const tripKey = nameKey
 
 export function matchNames(data: TravelData, names: string[]): MatchResult {
-  const byName = new Map(data.members.map((m) => [nameKey(m.fullName), m]))
+  // Two records can share a name - a stray left behind by a failed match, or two
+  // real colleagues. Whoever is still here wins, so an import never reattaches
+  // people to a record marked as having left.
+  const byName = new Map<string, Member>()
+  for (const m of data.members) {
+    const key = nameKey(m.fullName)
+    const held = byName.get(key)
+    if (!held || (!held.active && m.active)) byName.set(key, m)
+  }
   const matched: Member[] = []
   const unmatched: string[] = []
 

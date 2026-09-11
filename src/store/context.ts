@@ -23,7 +23,7 @@ export interface StoreValue {
   importMembers(drafts: MemberDraft[]): void
   /** Add or refresh trips from a spreadsheet, matching people by full name. */
   importTrips(trips: TripImport[]): void
-  /** Drop leftover records for people who left and are on no trip. */
+  /** Fold shadow records into the person they duplicate, then drop empty ones. */
   tidyLeavers(): void
   replaceAll(data: TravelData): void
 }

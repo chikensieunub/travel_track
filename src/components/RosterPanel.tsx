@@ -78,7 +78,7 @@ export function RosterPanel({
 
       {strays > 0 && (
         <button className="tidy small" onClick={onTidy}>
-          Remove {strays} unused {strays === 1 ? 'record' : 'records'}
+          Tidy up {strays} duplicate {strays === 1 ? 'record' : 'records'}
         </button>
       )}
 

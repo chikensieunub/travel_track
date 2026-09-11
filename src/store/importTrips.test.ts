@@ -200,3 +200,45 @@ describe('names arriving in a different Unicode encoding', () => {
     expect(result.membersAdded).toBe(1)
   })
 })
+
+describe('when the roster already holds a duplicate', () => {
+  // The duplicate was created by the very bug we fixed, so it is the normal
+  // state of anyone's data now: one real person, one stray marked as having left.
+  const NAME = 'Đôn Thị Thuý Hằng'
+
+  const withDuplicate = (): TravelData => {
+    let d = addMember(emptyData(), { domainName: 'ACME-dtth', fullName: NAME, directBoss: 'MINHND' })
+    d = addMember(d, { domainName: NAME, fullName: NAME, active: false })
+    return d
+  }
+
+  test('matches the person who is still here, not the stray', () => {
+    const { matched } = matchNames(withDuplicate(), [NAME])
+    expect(matched).toHaveLength(1)
+    expect(matched[0].active).toBe(true)
+  })
+
+  test('puts them on the trip as current staff, so they leave the left panel', () => {
+    const result = applyTripImport(withDuplicate(), [trip({ names: [NAME] })])
+    const onTrip = membersOnTrip(result.data, result.data.trips[0].id)
+    expect(onTrip).toHaveLength(1)
+    expect(onTrip[0].active).toBe(true)
+  })
+
+  test('leaves the stray attached to nothing, so it can be tidied away', () => {
+    const result = applyTripImport(withDuplicate(), [trip({ names: [NAME] })])
+    const stray = result.data.members.find((m) => !m.active)!
+    expect(result.data.assignments.some((a) => a.memberId === stray.id)).toBe(false)
+  })
+
+  test('adds nobody new', () => {
+    expect(applyTripImport(withDuplicate(), [trip({ names: [NAME] })]).membersAdded).toBe(0)
+  })
+
+  test('still matches a leaver when that is the only record of them', () => {
+    let d = addMember(emptyData(), { domainName: 'X', fullName: 'Only Record', active: false })
+    const { matched } = matchNames(d, ['Only Record'])
+    expect(matched).toHaveLength(1)
+    expect(matched[0].active).toBe(false)
+  })
+})
