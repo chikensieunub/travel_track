@@ -1,5 +1,6 @@
 import type { Member, MemberDraft, TravelData } from './types'
 import { addMember } from './operations'
+import { nameKey } from './names'
 
 export interface MergeResult {
   data: TravelData
@@ -8,7 +9,7 @@ export interface MergeResult {
 }
 
 /** Domain names identify people, and case is not meaningful in them. */
-const key = (domainName: string): string => domainName.trim().toLowerCase()
+const key = nameKey
 
 /**
  * Fold imported rows into the roster, keyed on domain name.

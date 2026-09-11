@@ -1,3 +1,5 @@
+import { cleanName, nameKey } from './names'
+
 export interface TripBlock {
   title: string
   names: string[]
@@ -17,7 +19,7 @@ const TITLE_SPREAD = 3
 
 const text = (value: unknown): string => {
   if (value === null || value === undefined) return ''
-  return String(value).trim().replace(/\s+/g, ' ')
+  return cleanName(String(value))
 }
 
 const isNameHeader = (value: unknown): boolean => NAME_HEADERS.includes(text(value).toLowerCase())
@@ -41,7 +43,7 @@ export function readTripBlocks(grid: unknown[][]): TripBlock[] {
       for (let r = row + 1; r < grid.length; r += 1) {
         const name = text((grid[r] ?? [])[col])
         if (!name) break // A blank ends the block; the next one starts elsewhere.
-        const key = name.toLowerCase()
+        const key = nameKey(name)
         if (!seen.has(key)) {
           seen.add(key)
           names.push(name)

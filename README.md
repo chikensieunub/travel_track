@@ -117,6 +117,11 @@ People are matched on **full name**, ignoring case and stray spacing but keeping
 accents significant — in Vietnamese names they distinguish different people, so
 stripping them would merge two colleagues into one.
 
+Accented text has more than one valid Unicode encoding, and spreadsheets written
+on different machines use different ones, so every name is brought to a single
+encoding before comparing. Without that, the same visible name in two files does
+not match, and someone already in the roster is wrongly taken for a leaver.
+
 **A name the roster does not know is taken to be someone who has left**: they are
 added with "Currently on the team" unticked, and appear on the trip card under
 **Left the company**. Their domain name starts as their full name, since the file
@@ -182,6 +187,7 @@ src/
     readTripBlocks.ts    Finds trip blocks laid out across a sheet
     importTrips.ts       Matches names and folds trips in
     boss.ts              Who gets the Boss panel (by name, for now)
+    names.ts             One canonical form for every name comparison
     exportRows.ts        Flattens everything to one row per person per trip
     writeWorkbook.ts     Turns those rows into spreadsheet cells
     LocalStorageStore.ts TravelStore interface + browser-storage implementation

@@ -1,4 +1,5 @@
 import type { Member } from './types'
+import { cleanName } from './names'
 
 /** Group heading used for members whose direct boss was never recorded. */
 export const NO_BOSS = ''
@@ -23,7 +24,7 @@ const byName = (a: Member, b: Member): number => a.fullName.localeCompare(b.full
 export function groupByBoss(members: Member[]): BossGroup[] {
   const groups = new Map<string, Member[]>()
   for (const m of members) {
-    const boss = m.directBoss.trim()
+    const boss = cleanName(m.directBoss)
     const bucket = groups.get(boss)
     if (bucket) bucket.push(m)
     else groups.set(boss, [m])
@@ -47,7 +48,7 @@ export function groupByBoss(members: Member[]): BossGroup[] {
  * a shared colour across two cards reads far better than a grey column.
  */
 export function bossSlots(members: Member[]): Map<string, number> {
-  const names = [...new Set(members.map((m) => m.directBoss.trim()).filter(Boolean))].sort((a, b) =>
+  const names = [...new Set(members.map((m) => cleanName(m.directBoss)).filter(Boolean))].sort((a, b) =>
     a.localeCompare(b),
   )
   return new Map(names.map((name, index) => [name, index % SLOT_COUNT]))
@@ -66,7 +67,7 @@ export function cardSlots(allMembers: Member[], bossesOnCard: string[]): Map<str
   const resolved = new Map<string, number>()
 
   // Sorted so a card resolves the same way however its groups arrive.
-  const names = [...new Set(bossesOnCard.map((b) => b.trim()).filter(Boolean))].sort((a, b) => a.localeCompare(b))
+  const names = [...new Set(bossesOnCard.map((b) => cleanName(b)).filter(Boolean))].sort((a, b) => a.localeCompare(b))
 
   for (const name of names) {
     const want = base.get(name) ?? 0

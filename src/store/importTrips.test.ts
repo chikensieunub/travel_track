@@ -152,3 +152,51 @@ describe('applyTripImport', () => {
     expect(result.tripsAdded).toBe(0)
   })
 })
+
+describe('names arriving in a different Unicode encoding', () => {
+  // Excel files written on different machines encode accents differently. The
+  // same visible name is then not equal as a string, which used to create a
+  // duplicate "left the company" record for someone already in the roster.
+  const NAME = 'Đôn Thị Thúy Hằng'
+
+  const withMember = (name: string): TravelData =>
+    addMember(emptyData(), { domainName: 'ACME-dtth', fullName: name, directBoss: 'MINHND' })
+
+  test('the two encodings really are different strings', () => {
+    expect(NAME.normalize('NFC')).not.toBe(NAME.normalize('NFD'))
+  })
+
+  test('matches someone stored composed against a file written decomposed', () => {
+    const data = withMember(NAME.normalize('NFC'))
+    expect(matchNames(data, [NAME.normalize('NFD')]).matched).toHaveLength(1)
+  })
+
+  test('matches someone stored decomposed against a file written composed', () => {
+    const data = withMember(NAME.normalize('NFD'))
+    expect(matchNames(data, [NAME.normalize('NFC')]).matched).toHaveLength(1)
+  })
+
+  test('does not add a duplicate leaver for someone already in the roster', () => {
+    const data = withMember(NAME.normalize('NFC'))
+    const result = applyTripImport(data, [trip({ names: [NAME.normalize('NFD')] })])
+
+    expect(result.membersAdded).toBe(0)
+    expect(result.data.members).toHaveLength(1)
+    expect(result.data.members[0].active).toBe(true)
+  })
+
+  test('puts them on the trip as a current member, not as having left', () => {
+    const data = withMember(NAME.normalize('NFC'))
+    const result = applyTripImport(data, [trip({ names: [NAME.normalize('NFD')] })])
+    const onTrip = membersOnTrip(result.data, result.data.trips[0].id)
+
+    expect(onTrip).toHaveLength(1)
+    expect(onTrip[0].active).toBe(true)
+  })
+
+  test('still adds someone genuinely unknown as having left', () => {
+    const data = withMember(NAME.normalize('NFC'))
+    const result = applyTripImport(data, [trip({ names: ['Someone Else Entirely'] })])
+    expect(result.membersAdded).toBe(1)
+  })
+})

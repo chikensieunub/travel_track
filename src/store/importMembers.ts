@@ -1,4 +1,5 @@
 import type { MemberDraft } from './types'
+import { cleanName, nameKey } from './names'
 
 export type ImportFieldKey = 'domainName' | 'fullName' | 'directBoss' | 'location'
 
@@ -68,7 +69,7 @@ export function matchColumns(headers: string[]): ColumnMapping {
 const cellText = (value: unknown): string => {
   if (value === null || value === undefined) return ''
   if (value instanceof Date) return value.toISOString().slice(0, 10)
-  return String(value).trim()
+  return cleanName(String(value))
 }
 
 export interface DraftsResult {
@@ -102,7 +103,7 @@ export function rowsToDrafts(rows: SheetRow[], mapping: ColumnMapping): DraftsRe
       continue
     }
 
-    const key = domainName.toLowerCase()
+    const key = nameKey(domainName)
     if (byKey.has(key)) duplicates.push(domainName)
     byKey.set(key, {
       domainName,

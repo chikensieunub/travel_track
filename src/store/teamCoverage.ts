@@ -1,4 +1,5 @@
 import type { Member } from './types'
+import { nameKey } from './names'
 
 export interface Coverage {
   /** How many of this boss's team are confirmed on the trip. */
@@ -17,9 +18,9 @@ export interface Coverage {
  */
 export function teamCoverage(members: Member[], boss: string, confirmedIds: string[]): Coverage {
   const onTrip = new Set(confirmedIds)
-  const wanted = boss.trim()
+  const wanted = nameKey(boss)
 
-  const team = members.filter((m) => m.directBoss.trim() === wanted && (m.active || onTrip.has(m.id)))
+  const team = members.filter((m) => nameKey(m.directBoss) === wanted && (m.active || onTrip.has(m.id)))
   const confirmed = team.filter((m) => onTrip.has(m.id)).length
 
   return {

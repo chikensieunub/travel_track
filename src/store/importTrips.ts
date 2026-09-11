@@ -1,5 +1,6 @@
 import type { Member, TravelData } from './types'
 import { addMember, addTrip, assign, updateTrip } from './operations'
+import { cleanName, nameKey } from './names'
 
 export interface TripImport {
   title: string
@@ -20,14 +21,7 @@ export interface ApplyResult {
   membersAdded: number
 }
 
-/**
- * People are matched on their full name, ignoring case and stray spacing.
- * Diacritics are kept significant: in Vietnamese names they distinguish
- * different people, so stripping them would merge two colleagues into one.
- */
-const nameKey = (name: string): string => name.trim().replace(/\s+/g, ' ').toLowerCase()
-
-const tripKey = (destination: string): string => destination.trim().toLowerCase()
+const tripKey = nameKey
 
 export function matchNames(data: TravelData, names: string[]): MatchResult {
   const byName = new Map(data.members.map((m) => [nameKey(m.fullName), m]))
@@ -37,7 +31,7 @@ export function matchNames(data: TravelData, names: string[]): MatchResult {
   for (const name of names) {
     const found = byName.get(nameKey(name))
     if (found) matched.push(found)
-    else unmatched.push(name.trim().replace(/\s+/g, ' '))
+    else unmatched.push(cleanName(name))
   }
 
   return { matched, unmatched }

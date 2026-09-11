@@ -1,5 +1,6 @@
 import type { Assignment, AssignmentStatus, Member, MemberDraft, TravelData, Trip } from './types'
 import { tripOverlaps } from './derive'
+import { cleanName } from './names'
 
 export const SCHEMA_VERSION = 3
 
@@ -17,13 +18,13 @@ export function emptyData(): TravelData {
 export type NewMember = Pick<MemberDraft, 'domainName'> & Partial<MemberDraft>
 
 export function addMember(data: TravelData, input: NewMember): TravelData {
-  const domainName = input.domainName.trim()
+  const domainName = cleanName(input.domainName)
   const member: Member = {
     id: newId(),
     domainName,
-    fullName: input.fullName?.trim() || domainName,
-    directBoss: input.directBoss?.trim() ?? '',
-    location: input.location?.trim() ?? '',
+    fullName: cleanName(input.fullName ?? '') || domainName,
+    directBoss: cleanName(input.directBoss ?? ''),
+    location: cleanName(input.location ?? ''),
     active: input.active ?? true,
   }
   return { ...data, members: [...data.members, member] }
@@ -50,7 +51,7 @@ export type NewTrip = Pick<Trip, 'destination' | 'startDate' | 'durationDays'> &
 export function addTrip(data: TravelData, input: NewTrip): TravelData {
   const trip: Trip = {
     id: newId(),
-    destination: input.destination.trim(),
+    destination: cleanName(input.destination),
     startDate: input.startDate,
     durationDays: Math.max(1, Math.round(input.durationDays) || 1),
     purpose: input.purpose?.trim() ?? '',
