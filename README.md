@@ -39,6 +39,13 @@ The app runs at http://localhost:5173.
   trip card to another to move them; drag them back to the roster to take them
   off. Every trip card also has an **+ Add member** menu, so nothing depends on
   being able to drag.
+- **Boss** - one person gets their own panel at the top of every trip card they
+  are on, above the team columns, with their confirmed or tentative state shown
+  as a tag. They still count in the headcount and can still be moved between
+  confirmed and tentative. **Who this is comes from `BOSS_NAME` in
+  `src/store/boss.ts`** - matched on full name, which is deliberately temporary:
+  two people can share a name, and the proper fix is a flag on the member record.
+  Change that one value to point the panel at someone else.
 - **Left the company** - a third panel appears on a card when someone on that
   trip is marked as having left. It is worked out from the roster rather than
   stored, so unticking "Currently on the team" moves that person on every trip
@@ -174,6 +181,7 @@ src/
     teamCoverage.ts      How much of a boss's team is confirmed on a trip
     readTripBlocks.ts    Finds trip blocks laid out across a sheet
     importTrips.ts       Matches names and folds trips in
+    boss.ts              Who gets the Boss panel (by name, for now)
     exportRows.ts        Flattens everything to one row per person per trip
     writeWorkbook.ts     Turns those rows into spreadsheet cells
     LocalStorageStore.ts TravelStore interface + browser-storage implementation
@@ -188,6 +196,7 @@ src/
     MemberForm.tsx       Add/edit a member
     ImportMembersDialog.tsx  File picker, column mapping, preview, confirm
     ImportTripsDialog.tsx    Trips found, their dates, and what will change
+    BossPanel.tsx        The boss, alone above the team columns
     TripForm.tsx         Add/edit a trip
 ```
 

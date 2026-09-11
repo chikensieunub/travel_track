@@ -842,6 +842,33 @@ table.preview tr:last-child td {
   border-style: dashed;
 }
 
+/* The boss sits above the teams, so it is marked out rather than recessive. */
+.member-panel.panel-boss {
+  background: color-mix(in srgb, var(--accent) 7%, transparent);
+  border-color: color-mix(in srgb, var(--accent) 40%, var(--border));
+}
+
+.panel-boss .panel-title span:first-child {
+  color: var(--accent);
+}
+
+.panel-boss .chips {
+  flex-direction: column;
+  align-items: stretch;
+  min-height: 0;
+}
+
+.panel-boss .chip {
+  background: var(--surface);
+  border-color: color-mix(in srgb, var(--accent) 35%, var(--border));
+  border-radius: 6px;
+}
+
+.badge-tentative {
+  color: var(--warn);
+  background: var(--warn-soft);
+}
+
 /* People who have left: a record, not a plan, so drawn back further still. */
 .member-panel.panel-left {
   background: color-mix(in srgb, var(--muted) 7%, transparent);

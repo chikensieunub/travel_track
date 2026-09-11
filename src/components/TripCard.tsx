@@ -10,6 +10,8 @@ import {
 } from '../store/operations'
 import { cardSlots, cardSpan, groupByBoss } from '../store/groupByBoss'
 import { MemberPanel } from './MemberPanel'
+import { BossPanel } from './BossPanel'
+import { isBoss } from '../store/boss'
 
 const STATUS_LABEL: Record<Trip['status'], string> = {
   planned: 'Planned',
@@ -43,8 +45,12 @@ export function TripCard({
   const assignedIds = new Set(assigned.map((m) => m.id))
   const available: Member[] = data.members.filter((m) => m.active && !assignedIds.has(m.id))
 
-  const confirmed = membersOnTripByStatus(data, trip.id, 'confirmed')
-  const tentative = membersOnTripByStatus(data, trip.id, 'tentative')
+  // The boss is lifted out of the team columns, but only while he is still here.
+  const boss = membersOnTrip(data, trip.id).find((m) => m.active && isBoss(m))
+  const notBoss = (list: Member[]) => list.filter((m) => m.id !== boss?.id)
+
+  const confirmed = notBoss(membersOnTripByStatus(data, trip.id, 'confirmed'))
+  const tentative = notBoss(membersOnTripByStatus(data, trip.id, 'tentative'))
   const leavers = leaversOnTrip(data, trip.id)
 
   const confirmedGroups = groupByBoss(confirmed)
@@ -103,6 +109,20 @@ export function TripCard({
 
       {trip.purpose && <p className="trip-purpose">{trip.purpose}</p>}
       {trip.notes && <p className="trip-notes">{trip.notes}</p>}
+
+      {boss && (
+        <BossPanel
+          boss={boss}
+          status={assignmentStatus(data, trip.id, boss.id)}
+          tripId={trip.id}
+          tripName={trip.destination}
+          selected={selectedId === boss.id}
+          conflict={conflictFor(boss.id)}
+          onSelect={() => toggleSelect(boss.id)}
+          onMove={() => move(boss.id)}
+          onRemove={() => remove(boss.id)}
+        />
+      )}
 
       <MemberPanel
         status="confirmed"
