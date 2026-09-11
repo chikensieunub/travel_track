@@ -46,23 +46,23 @@ The app runs at http://localhost:5173.
   (**Move up** to bring them back). You can also drag someone straight into
   either panel. The headcount at the top counts both panels together.
 - **Who is on a trip** - each panel splits its people into a column per direct
-  boss, each column in its own colour. Colours follow the boss's name so a team
-  looks the same from card to card; past the eighth manager the palette starts
-  over, and if two teams on one card would land on the same colour, one shifts to
-  the next free one. So no column is ever left colourless and no two teams on a
-  card look alike. In **Confirmed**, a column's heading reads
-  as a ratio - `2/3 - 67%`, with a matching bar - meaning two of the three people
-  under that boss are confirmed on this trip. The denominator is the boss's whole
-  current team in the roster, not just the people on this trip, so it answers
-  "how much of that team is going". Leavers drop out of the team size, unless
-  they are still on the trip, so the figure never reads above 100%. The
-  **Tentative** panel keeps a plain count, since a ratio only means something for
-  people who are actually going. A boss keeps the same colour on every card, so you can scan the
-  board and see whose team is covering what. Anyone with no boss recorded gets a
-  grey column, last. Every column is headed by the boss's name, so the colours
-  are a convenience, never the only way to read it - the palette is validated for
-  colour-vision deficiency in both light and dark themes, and past eight bosses
-  the ninth takes a neutral grey rather than repeating a colour.
+  boss, each column in its own colour, so you can scan the board and see whose
+  team is covering what. Anyone with no boss recorded gets a grey column, last.
+- **Team colours** - a colour follows the boss's name, so a team looks the same
+  from card to card. Past the eighth manager the palette starts over, and if two
+  teams on one card would land on the same colour, one shifts to the next free
+  one: no column is ever colourless, and no two teams on a card look alike. With
+  more than eight teams on a single card a repeat becomes unavoidable. Every
+  column is headed by its boss's name, so colour is a convenience and never the
+  only way to read it - the palette is validated for colour-vision deficiency
+  against both the light and dark card surfaces.
+- **Team coverage** - in **Confirmed**, a column's heading reads as a ratio,
+  `2/3 · 67%`, with a matching bar: two of the three people under that boss are
+  confirmed on this trip. The denominator is the boss's whole current team in the
+  roster, not just the people on this trip, so it answers "how much of that team
+  is going". Leavers drop out of the team size unless they are still on the trip,
+  so the figure never reads above 100%. **Tentative** keeps a plain count, since a
+  coverage ratio only means something for people who are actually going.
 - **Keyboard** - tab to a person's handle, press space to lift, arrow keys to
   move, space to drop.
 - **Clashes** - dropping someone onto a trip that overlaps another of their trips
