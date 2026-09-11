@@ -44,9 +44,10 @@ describe('nameKey', () => {
     expect(nameKey('Nguyen Khanh Trung')).not.toBe(nameKey('Nguyễn Khánh Trung'))
   })
 
-  test('still treats a different tone mark as a different person', () => {
-    // Thúy and Thuý are written differently on purpose; we must not merge them.
-    expect(nameKey('Thúy')).not.toBe(nameKey('Thuý'))
+  test('treats a different tone as a different person', () => {
+    // A different tone is a different name. Where that tone is written is not:
+    // Thúy and Thuý are one name, covered in "where the tone mark sits" below.
+    expect(nameKey('Thúy')).not.toBe(nameKey('Thùy'))
   })
 
   test('matches a domain name whatever the casing', () => {
@@ -87,6 +88,46 @@ describe('invisible characters', () => {
   })
 
   test('does not strip the characters of the name itself', () => {
+    expect(cleanName('Đôn Thị Thúy Hằng')).toBe('Đôn Thị Thúy Hằng')
+  })
+})
+
+describe('where the tone mark sits', () => {
+  // Vietnamese writes the tone on the syllable, and two conventions disagree
+  // about which vowel carries it. Both spell the same name.
+  test.each([
+    ['Thúy', 'Thuý'],
+    ['Hoà', 'Hòa'],
+    ['Thuỷ', 'Thủy'],
+    ['Đôn Thị Thúy Hằng', 'Đôn Thị Thuý Hằng'],
+  ])('matches %s against %s', (a, b) => {
+    expect(nameKey(a)).toBe(nameKey(b))
+  })
+
+  test('still tells a toned name from an untoned one', () => {
+    expect(nameKey('Thúy')).not.toBe(nameKey('Thuy'))
+  })
+
+  test('still tells one tone from another', () => {
+    expect(nameKey('Thúy')).not.toBe(nameKey('Thùy'))
+    expect(nameKey('Nguyễn')).not.toBe(nameKey('Nguyên'))
+  })
+
+  test.each([
+    ['Lê', 'Le', 'circumflex'],
+    ['Tư', 'Tu', 'horn'],
+    ['Ăn', 'An', 'breve'],
+    ['Đức', 'Duc', 'stroke'],
+  ])('keeps %s apart from %s, since the %s makes a different letter', (a, b) => {
+    expect(nameKey(a)).not.toBe(nameKey(b))
+  })
+
+  test('does not move a tone between separate words', () => {
+    expect(nameKey('Án Bô')).not.toBe(nameKey('An Bố'))
+  })
+
+  test('leaves the displayed name exactly as written', () => {
+    expect(cleanName('Đôn Thị Thuý Hằng')).toBe('Đôn Thị Thuý Hằng')
     expect(cleanName('Đôn Thị Thúy Hằng')).toBe('Đôn Thị Thúy Hằng')
   })
 })

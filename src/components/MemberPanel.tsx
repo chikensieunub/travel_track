@@ -74,33 +74,38 @@ export function MemberPanel({
       ) : (
         <div className="boss-columns">
           {columns.map((column) => {
+            // Nobody's manager is not a team, so it gets no heading and no ratio.
             const named = column.boss !== NO_BOSS
-            const heading = named ? column.boss : 'No boss recorded'
             const slot = named ? (slots.get(column.boss) ?? OTHER_SLOT) : OTHER_SLOT
             const cover = teamCoverage(allMembers, column.boss, onTripIds)
-            const label = showCoverage
-              ? `${heading}, ${cover.confirmed} of ${cover.teamSize} confirmed, ${cover.percent}%`
-              : `${heading}, ${people(column.members.length)}`
+            const withRatio = named && showCoverage
+            const label = named
+              ? withRatio
+                ? `${column.boss}, ${cover.confirmed} of ${cover.teamSize} confirmed, ${cover.percent}%`
+                : `${column.boss}, ${people(column.members.length)}`
+              : people(column.members.length)
             return (
               <section
-                key={heading}
-                className="boss-column"
+                key={named ? column.boss : '__no-boss__'}
+                className={`boss-column${named ? '' : ' boss-column-unnamed'}`}
                 data-boss-slot={slot}
                 role="group"
                 aria-label={label}
               >
-                <h5 className="boss-heading">
-                  <span className="boss-name">{heading}</span>
-                  {showCoverage ? (
-                    <span className="boss-ratio">
-                      <span className="boss-count">{`${cover.confirmed}/${cover.teamSize}`}</span>
-                      <span className="boss-percent">{`${cover.percent}%`}</span>
-                    </span>
-                  ) : (
-                    <span className="boss-count">{column.members.length}</span>
-                  )}
-                </h5>
-                {showCoverage && (
+                {named && (
+                  <h5 className="boss-heading">
+                    <span className="boss-name">{column.boss}</span>
+                    {withRatio ? (
+                      <span className="boss-ratio">
+                        <span className="boss-count">{`${cover.confirmed}/${cover.teamSize}`}</span>
+                        <span className="boss-percent">{`${cover.percent}%`}</span>
+                      </span>
+                    ) : (
+                      <span className="boss-count">{column.members.length}</span>
+                    )}
+                  </h5>
+                )}
+                {withRatio && (
                   <span
                     className="coverage-meter"
                     data-testid="coverage-meter"

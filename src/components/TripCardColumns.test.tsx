@@ -101,15 +101,16 @@ describe('Trip card member columns', () => {
     expect(within(card('Tokyo')).getByText('Ben Ortiz')).toBeInTheDocument()
   })
 
-  test('members with no boss recorded get their own column', async () => {
+  test('members with no boss recorded are listed without a team heading', async () => {
     const user = userEvent.setup()
     render(<App />)
     await addMember(user, 'Ana', '')
     await addTrip(user, 'Tokyo')
     await assignTo(user, 'Tokyo', 'Ana')
 
-    const column = within(card('Tokyo')).getByRole('group', { name: /No boss recorded/ })
+    const column = within(card('Tokyo')).getByRole('group', { name: '1 member' })
     expect(within(column).getByText('Ana')).toBeInTheDocument()
+    expect(within(card('Tokyo')).queryByText('No boss recorded')).not.toBeInTheDocument()
   })
 
   test('a boss wears the same colour on every trip', async () => {

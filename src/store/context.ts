@@ -23,6 +23,8 @@ export interface StoreValue {
   importMembers(drafts: MemberDraft[]): void
   /** Add or refresh trips from a spreadsheet, matching people by full name. */
   importTrips(trips: TripImport[]): void
+  /** Drop leftover records for people who left and are on no trip. */
+  tidyLeavers(): void
   replaceAll(data: TravelData): void
 }
 

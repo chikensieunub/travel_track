@@ -90,3 +90,50 @@ describe('The left-the-company panel', () => {
     expect(within(card()).queryByRole('group', { name: /^Left the company/ })).not.toBeInTheDocument()
   })
 })
+
+describe('People with no boss recorded', () => {
+  beforeEach(() => localStorage.clear())
+
+  async function tripWithBosslessPerson(user: User) {
+    render(<App />)
+    await addMember(user, 'Ana', '')
+    await user.click(screen.getByRole('button', { name: 'Add trip' }))
+    await user.type(screen.getByLabelText('Destination'), 'Tokyo')
+    await user.click(screen.getByRole('button', { name: 'Save trip' }))
+    await user.selectOptions(within(card()).getByLabelText('Add member to Tokyo'), 'Ana')
+  }
+
+  test('are listed without a "no boss recorded" heading', async () => {
+    const user = userEvent.setup()
+    await tripWithBosslessPerson(user)
+    expect(within(card()).queryByText('No boss recorded')).not.toBeInTheDocument()
+  })
+
+  test('are still shown on the trip', async () => {
+    const user = userEvent.setup()
+    await tripWithBosslessPerson(user)
+    expect(within(confirmed()).getByText('Ana')).toBeInTheDocument()
+  })
+
+  test('carry no team ratio, since they are not a team', async () => {
+    const user = userEvent.setup()
+    await tripWithBosslessPerson(user)
+    expect(within(confirmed()).queryByText(/^\d+\/\d+$/)).not.toBeInTheDocument()
+  })
+
+  test('do not disturb a real team column beside them', async () => {
+    const user = userEvent.setup()
+    render(<App />)
+    await addMember(user, 'Ana', '')
+    await addMember(user, 'Dia', 'Ben Ortiz')
+    await user.click(screen.getByRole('button', { name: 'Add trip' }))
+    await user.type(screen.getByLabelText('Destination'), 'Tokyo')
+    await user.click(screen.getByRole('button', { name: 'Save trip' }))
+    await user.selectOptions(within(card()).getByLabelText('Add member to Tokyo'), 'Ana')
+    await user.selectOptions(within(card()).getByLabelText('Add member to Tokyo'), 'Dia')
+
+    const team = within(confirmed()).getByRole('group', { name: /^Ben Ortiz/ })
+    expect(within(team).getByText('Dia')).toBeInTheDocument()
+    expect(within(confirmed()).getByText('Ana')).toBeInTheDocument()
+  })
+})

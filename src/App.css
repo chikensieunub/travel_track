@@ -949,3 +949,19 @@ table.preview tr:last-child td {
   border: 1px solid var(--border);
   border-radius: 4px;
 }
+
+/* Nobody's manager is not a team: no heading, no colour bar. */
+.boss-column-unnamed {
+  background: none;
+  border-top-color: transparent;
+  border-top-width: 0;
+  padding-top: 0;
+}
+
+.tidy {
+  width: 100%;
+  margin-bottom: 10px;
+  color: var(--warn);
+  background: var(--warn-soft);
+  border-color: color-mix(in srgb, var(--warn) 35%, transparent);
+}

@@ -13,6 +13,7 @@ import {
 import { useStore } from '../store/context'
 import { isPast } from '../store/derive'
 import { conflictsFor, emptyData } from '../store/operations'
+import { unusedLeavers } from '../store/tidyLeavers'
 import { exportRows } from '../store/exportRows'
 import { workbookColumns, workbookSheet } from '../store/writeWorkbook'
 import type { AssignmentStatus, Member, MemberDraft, TravelData, Trip, TripStatus } from '../store/types'
@@ -343,6 +344,17 @@ export function Board() {
             bosses={bosses}
             onAdd={() => setMemberForm({ open: true })}
             onImport={() => setImportOpen(true)}
+            strays={unusedLeavers(data).length}
+            onTidy={() => {
+              const count = unusedLeavers(data).length
+              const names = unusedLeavers(data).slice(0, 5).map((m) => m.fullName).join(', ')
+              const more = count > 5 ? ` and ${count - 5} more` : ''
+              if (window.confirm(`Remove ${count} leftover records? They are on no trips, so nothing is lost.
+
+${names}${more}`)) {
+                store.tidyLeavers()
+              }
+            }}
             onEdit={(member) => setMemberForm({ open: true, member })}
             onDelete={deleteMember}
           />

@@ -14,6 +14,8 @@ export function RosterPanel({
   bosses,
   onAdd,
   onImport,
+  strays,
+  onTidy,
   onEdit,
   onDelete,
 }: {
@@ -28,6 +30,9 @@ export function RosterPanel({
   bosses: string[]
   onAdd: () => void
   onImport: () => void
+  /** How many leftover records could be removed without losing anything. */
+  strays: number
+  onTidy: () => void
   onEdit: (member: Member) => void
   onDelete: (member: Member) => void
 }) {
@@ -70,6 +75,12 @@ export function RosterPanel({
           </select>
         </div>
       </div>
+
+      {strays > 0 && (
+        <button className="tidy small" onClick={onTidy}>
+          Remove {strays} unused {strays === 1 ? 'record' : 'records'}
+        </button>
+      )}
 
       <ul className={`roster-list${isOver ? ' drop-target' : ''}`}>
         {members.map((member) => (
