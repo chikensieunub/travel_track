@@ -22,6 +22,7 @@ import { MemberForm } from './MemberForm'
 import { TripForm, type TripDraft } from './TripForm'
 import { ImportMembersDialog } from './ImportMembersDialog'
 import { ImportTripsDialog } from './ImportTripsDialog'
+import { BUILD_ID } from '../buildId'
 
 /** Today as a local yyyy-mm-dd, so "past" flips over at the user's midnight, not UTC's. */
 function todayIso(): string {
@@ -231,7 +232,7 @@ export function Board() {
           <h1>
             Travel Tracker
             <span className="build-tag" title="Which build this page is running">
-              {__APP_BUILD__}
+              {BUILD_ID}
             </span>
           </h1>
           <div className="app-actions">
