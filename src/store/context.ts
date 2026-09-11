@@ -1,5 +1,6 @@
 import { createContext, useContext } from 'react'
 import type { AssignmentStatus, MemberDraft, TravelData } from './types'
+import type { TripImport } from './importTrips'
 import type * as ops from './operations'
 
 export interface StoreValue {
@@ -20,6 +21,8 @@ export interface StoreValue {
   setAssignmentStatus(tripId: string, memberId: string, status: AssignmentStatus): void
   /** Fold imported rows into the roster, keyed on domain name. */
   importMembers(drafts: MemberDraft[]): void
+  /** Add or refresh trips from a spreadsheet, matching people by full name. */
+  importTrips(trips: TripImport[]): void
   replaceAll(data: TravelData): void
 }
 

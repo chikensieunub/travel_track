@@ -17,20 +17,29 @@ function firstSheetGrid(parsed: unknown): unknown[][] {
 }
 
 /**
- * Read the first worksheet, treating row one as headers.
+ * Read the first worksheet as a plain grid of cells.
  *
- * Blank header cells become "Column 3" and so on, so every column can still be
- * chosen in the mapping step rather than silently disappearing.
+ * Trip sheets repeat headings across blocks, so they need positions rather than
+ * names; readSheet's keyed rows would silently collapse them.
  */
-export async function readSheet(file: File): Promise<Sheet> {
+export async function readGrid(file: File): Promise<unknown[][]> {
   let parsed: unknown
   try {
     parsed = await readXlsxFile(file)
   } catch {
     throw new Error('The file could not be read as a spreadsheet. Save it as .xlsx and try again.')
   }
+  return firstSheetGrid(parsed)
+}
 
-  const grid = firstSheetGrid(parsed)
+/**
+ * Read the first worksheet, treating row one as headers.
+ *
+ * Blank header cells become "Column 3" and so on, so every column can still be
+ * chosen in the mapping step rather than silently disappearing.
+ */
+export async function readSheet(file: File): Promise<Sheet> {
+  const grid = await readGrid(file)
   if (grid.length === 0) throw new Error('That spreadsheet is empty.')
 
   const headers = grid[0].map((value, index) => {

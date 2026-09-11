@@ -135,13 +135,15 @@ describe('The toolbar buttons', () => {
     expect(screen.queryByRole('button', { name: 'Import' })).not.toBeInTheDocument()
   })
 
-  test('names the roster import for the file it takes', () => {
+  test('each import button sits in the panel it imports into', () => {
     render(<App />)
-    expect(within(roster()).getByRole('button', { name: 'Import from Excel' })).toBeInTheDocument()
+    expect(within(roster()).getByRole('button', { name: 'Import members' })).toBeInTheDocument()
+    expect(within(screen.getByRole('main')).getByRole('button', { name: 'Import trips' })).toBeInTheDocument()
   })
 
-  test('there is exactly one button mentioning import', () => {
+  test('the two imports are named for what they bring in, not for the file type', () => {
     render(<App />)
-    expect(screen.getAllByRole('button', { name: /import/i })).toHaveLength(1)
+    const names = screen.getAllByRole('button', { name: /import/i }).map((b) => b.textContent)
+    expect(names.sort()).toEqual(['Import members', 'Import trips'])
   })
 })

@@ -1,6 +1,6 @@
 import { describe, test, expect } from 'vitest'
 import writeXlsxFile from 'write-excel-file/node'
-import { readSheet } from './readSheet'
+import { readGrid, readSheet } from './readSheet'
 
 async function xlsx(grid: string[][]): Promise<File> {
   const sheet = grid.map((row) => row.map((value) => ({ value, type: String })))
@@ -32,5 +32,24 @@ describe('readSheet', () => {
   test('rejects a file that is not a spreadsheet', async () => {
     const notASheet = new File(['just some text'], 'notes.xlsx', { type: 'application/vnd.ms-excel' })
     await expect(readSheet(notASheet)).rejects.toThrow(/could not be read/i)
+  })
+})
+
+describe('readGrid', () => {
+  test('returns the sheet as rows of cells', async () => {
+    const grid = await readGrid(await xlsx([['A', 'B'], ['1', '2']]))
+    expect(grid[0][0]).toBe('A')
+    expect(grid[1][1]).toBe('2')
+  })
+
+  test('keeps repeated column headings apart, which readSheet cannot', async () => {
+    // Trip sheets repeat "Full name" once per block; keyed rows would collide.
+    const grid = await readGrid(await xlsx([['Full name', 'Full name'], ['Ana', 'Ben']]))
+    expect(grid[1]).toEqual(['Ana', 'Ben'])
+  })
+
+  test('rejects a file that is not a spreadsheet', async () => {
+    const notASheet = new File(['nope'], 'notes.xlsx', { type: 'application/vnd.ms-excel' })
+    await expect(readGrid(notASheet)).rejects.toThrow(/could not be read/i)
   })
 })

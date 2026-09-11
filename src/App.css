@@ -842,6 +842,30 @@ table.preview tr:last-child td {
   border-style: dashed;
 }
 
+/* People who have left: a record, not a plan, so drawn back further still. */
+.member-panel.panel-left {
+  background: color-mix(in srgb, var(--muted) 7%, transparent);
+  border-style: dotted;
+  opacity: 0.8;
+}
+
+.member-panel.panel-left .chip-name {
+  cursor: default;
+}
+
+.days-input {
+  width: 5em;
+}
+
+.import-dialog td {
+  padding: 4px 8px;
+}
+
+.import-dialog td input {
+  padding: 4px 7px;
+  font-size: 13px;
+}
+
 .member-panel.drop-target {
   background: var(--accent-soft);
   outline: 2px solid var(--accent);

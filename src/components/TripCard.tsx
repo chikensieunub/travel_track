@@ -1,7 +1,13 @@
 import { useState } from 'react'
 import type { AssignmentStatus, Member, TravelData, Trip } from '../store/types'
 import { formatRange } from '../store/derive'
-import { assignmentStatus, conflictsFor, membersOnTrip, membersOnTripByStatus } from '../store/operations'
+import {
+  assignmentStatus,
+  conflictsFor,
+  leaversOnTrip,
+  membersOnTrip,
+  membersOnTripByStatus,
+} from '../store/operations'
 import { cardSlots, cardSpan, groupByBoss } from '../store/groupByBoss'
 import { MemberPanel } from './MemberPanel'
 
@@ -39,15 +45,17 @@ export function TripCard({
 
   const confirmed = membersOnTripByStatus(data, trip.id, 'confirmed')
   const tentative = membersOnTripByStatus(data, trip.id, 'tentative')
+  const leavers = leaversOnTrip(data, trip.id)
 
   const confirmedGroups = groupByBoss(confirmed)
   const tentativeGroups = groupByBoss(tentative)
+  const leaverGroups = groupByBoss(leavers)
 
   // Resolved once for the whole card, so a boss looks the same in both panels
   // and no two teams on this card share a colour.
   const slots = cardSlots(
     data.members,
-    [...confirmedGroups, ...tentativeGroups].map((g) => g.boss),
+    [...confirmedGroups, ...tentativeGroups, ...leaverGroups].map((g) => g.boss),
   )
 
   /** Other trips each assignee is on that share a day with this one. */
@@ -70,7 +78,7 @@ export function TripCard({
   }
 
   // Width follows how much there is to show, so busy trips get shorter, not narrower.
-  const groups = confirmedGroups.length + tentativeGroups.length
+  const groups = confirmedGroups.length + tentativeGroups.length + leaverGroups.length
   const span = cardSpan(assigned.length, groups)
 
   return (
@@ -125,6 +133,23 @@ export function TripCard({
         onMove={move}
         onRemove={remove}
       />
+
+      {leavers.length > 0 && (
+        <MemberPanel
+          status="left"
+          title="Left the company"
+          members={leavers}
+          allMembers={data.members}
+          tripId={trip.id}
+          tripName={trip.destination}
+          slots={slots}
+          selectedId={selectedId}
+          conflictFor={conflictFor}
+          onSelect={toggleSelect}
+          onMove={move}
+          onRemove={remove}
+        />
+      )}
 
       <label className="visually-hidden" htmlFor={`add-${trip.id}`}>
         Add member to {trip.destination}

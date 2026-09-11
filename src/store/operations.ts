@@ -139,14 +139,25 @@ export function membersOnTrip(data: TravelData, tripId: string): Member[] {
   return data.members.filter((m) => ids.has(m.id))
 }
 
-/** Everyone on a trip with the given status. */
+/** Current staff on a trip with the given status. Leavers are listed separately. */
 export function membersOnTripByStatus(data: TravelData, tripId: string, status: AssignmentStatus): Member[] {
   const ids = new Set(
     data.assignments
       .filter((a) => a.tripId === tripId && (a.status ?? 'confirmed') === status)
       .map((a) => a.memberId),
   )
-  return data.members.filter((m) => ids.has(m.id))
+  return data.members.filter((m) => ids.has(m.id) && m.active)
+}
+
+/**
+ * People on a trip who have since left the company.
+ *
+ * Derived from the roster rather than stored, so marking someone as gone moves
+ * them on every trip they were ever on, without touching their history.
+ */
+export function leaversOnTrip(data: TravelData, tripId: string): Member[] {
+  const ids = new Set(data.assignments.filter((a) => a.tripId === tripId).map((a) => a.memberId))
+  return data.members.filter((m) => ids.has(m.id) && !m.active)
 }
 
 export function tripsForMember(data: TravelData, memberId: string): Trip[] {

@@ -39,7 +39,7 @@ export function RosterPanel({
       <header className="panel-head">
         <h2>Members</h2>
         <div className="panel-head-actions">
-          <button className="small" onClick={onImport}>Import from Excel</button>
+          <button className="small" onClick={onImport}>Import members</button>
           <button className="primary small" onClick={onAdd}>Add member</button>
         </div>
       </header>

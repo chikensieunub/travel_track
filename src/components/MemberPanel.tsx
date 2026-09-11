@@ -1,5 +1,8 @@
 import { useDroppable } from '@dnd-kit/core'
 import type { AssignmentStatus, Member } from '../store/types'
+
+/** The three lists a trip card shows. "left" is derived, not an assignment status. */
+export type PanelKind = AssignmentStatus | 'left'
 import { NO_BOSS, OTHER_SLOT, groupByBoss } from '../store/groupByBoss'
 import { teamCoverage } from '../store/teamCoverage'
 import { AssignedMember } from './MemberChip'
@@ -25,7 +28,7 @@ export function MemberPanel({
   onMove,
   onRemove,
 }: {
-  status: AssignmentStatus
+  status: PanelKind
   title: string
   members: Member[]
   /** The whole roster, so a team's size can be measured against it. */
@@ -41,7 +44,7 @@ export function MemberPanel({
 }) {
   const { setNodeRef, isOver } = useDroppable({
     id: `panel:${tripId}:${status}`,
-    data: { type: 'trip', tripId, status },
+    data: { type: 'trip', tripId, status: status === 'left' ? 'confirmed' : status },
   })
 
   const columns = groupByBoss(members)
@@ -49,6 +52,8 @@ export function MemberPanel({
   const showCoverage = status === 'confirmed'
   const onTripIds = members.map((m) => m.id)
   const moveLabel = status === 'confirmed' ? 'Move down to tentative' : 'Move up to confirmed'
+  // Someone who has left is a matter of record; moving them between lists is meaningless.
+  const movable = status !== 'left'
 
   return (
     <section
@@ -113,7 +118,7 @@ export function MemberPanel({
                       tripId={tripId}
                       tripName={tripName}
                       conflict={conflictFor(member.id)}
-                      selected={selectedId === member.id}
+                      selected={movable && selectedId === member.id}
                       moveLabel={moveLabel}
                       onSelect={() => onSelect(member.id)}
                       onMove={() => onMove(member.id)}

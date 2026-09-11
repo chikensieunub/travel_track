@@ -26,7 +26,7 @@ const roster = () => screen.getByRole('region', { name: 'Members' })
 const dialog = () => screen.getByRole('dialog', { name: 'Import members' })
 
 async function openImport(user: ReturnType<typeof userEvent.setup>, file: File) {
-  await user.click(within(roster()).getByRole('button', { name: 'Import from Excel' }))
+  await user.click(within(roster()).getByRole('button', { name: 'Import members' }))
   await user.upload(screen.getByLabelText('Excel file'), file)
   await waitFor(() => expect(within(dialog()).getByRole('button', { name: /^Import/ })).toBeEnabled())
 }
@@ -87,7 +87,7 @@ describe('Importing members from Excel', () => {
     render(<App />)
     // Not via openImport: with no recognisable domain column, Import stays disabled
     // until the mapping below is made by hand.
-    await user.click(within(roster()).getByRole('button', { name: 'Import from Excel' }))
+    await user.click(within(roster()).getByRole('button', { name: 'Import members' }))
     await user.upload(
       screen.getByLabelText('Excel file'),
       await xlsxFile(['Widget', 'Full Name'], [['ACME\\acruz', 'Ana Cruz']]),
@@ -106,7 +106,7 @@ describe('Importing members from Excel', () => {
   test('cannot import while the domain name column is unmapped', async () => {
     const user = userEvent.setup()
     render(<App />)
-    await user.click(within(roster()).getByRole('button', { name: 'Import from Excel' }))
+    await user.click(within(roster()).getByRole('button', { name: 'Import members' }))
     await user.upload(screen.getByLabelText('Excel file'), await xlsxFile(['Widget', 'Gadget'], [['a', 'b']]))
 
     await waitFor(() => expect(within(dialog()).getByRole('button', { name: /^Import/ })).toBeDisabled())
@@ -153,7 +153,7 @@ describe('Importing members from Excel', () => {
   test('explains itself when the file cannot be read as a spreadsheet', async () => {
     const user = userEvent.setup()
     render(<App />)
-    await user.click(within(roster()).getByRole('button', { name: 'Import from Excel' }))
+    await user.click(within(roster()).getByRole('button', { name: 'Import members' }))
     await user.upload(
       screen.getByLabelText('Excel file'),
       new File(['this is not a spreadsheet'], 'notes.xlsx', { type: 'application/vnd.ms-excel' }),

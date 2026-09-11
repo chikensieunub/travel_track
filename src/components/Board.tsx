@@ -21,6 +21,7 @@ import { TripCard } from './TripCard'
 import { MemberForm } from './MemberForm'
 import { TripForm, type TripDraft } from './TripForm'
 import { ImportMembersDialog } from './ImportMembersDialog'
+import { ImportTripsDialog } from './ImportTripsDialog'
 
 /** Today as a local yyyy-mm-dd, so "past" flips over at the user's midnight, not UTC's. */
 function todayIso(): string {
@@ -49,6 +50,7 @@ export function Board() {
   const [memberForm, setMemberForm] = useState<{ open: boolean; member?: Member }>({ open: false })
   const [tripForm, setTripForm] = useState<{ open: boolean; trip?: Trip }>({ open: false })
   const [importOpen, setImportOpen] = useState(false)
+  const [tripImportOpen, setTripImportOpen] = useState(false)
   const [clash, setClash] = useState<Clash | null>(null)
   const [dragged, setDragged] = useState<Member | null>(null)
   const importRef = useRef<HTMLInputElement>(null)
@@ -285,6 +287,18 @@ export function Board() {
           />
         )}
 
+        {tripImportOpen && (
+          <ImportTripsDialog
+            data={data}
+            today={today}
+            onClose={() => setTripImportOpen(false)}
+            onImport={(trips) => {
+              store.importTrips(trips)
+              setTripImportOpen(false)
+            }}
+          />
+        )}
+
         {memberForm.open && (
           <MemberForm
             initial={memberForm.member}
@@ -354,6 +368,7 @@ export function Board() {
                   <option value="done">Done</option>
                 </select>
               </div>
+              <button onClick={() => setTripImportOpen(true)}>Import trips</button>
               <button className="primary" onClick={() => setTripForm({ open: true })}>
                 Add trip
               </button>

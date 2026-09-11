@@ -39,6 +39,11 @@ The app runs at http://localhost:5173.
   trip card to another to move them; drag them back to the roster to take them
   off. Every trip card also has an **+ Add member** menu, so nothing depends on
   being able to drag.
+- **Left the company** - a third panel appears on a card when someone on that
+  trip is marked as having left. It is worked out from the roster rather than
+  stored, so unticking "Currently on the team" moves that person on every trip
+  they were ever on, and their history stays intact. They still count in the
+  headcount.
 - **Confirmed and tentative** - each trip card holds two panels. **Confirmed**
   are the people who are going; **Tentative** are the ones still under
   discussion. Anyone you add starts confirmed. To move someone, click their name
@@ -93,6 +98,30 @@ and **nothing touches the roster until you press Import**.
 Whether someone is marked as having left is a decision made in the app, so an
 import never silently reactivates them.
 
+## Importing trips from Excel
+
+**Import trips**, above the board, reads a sheet laid out as one block per trip:
+the trip's name above a `Full name` column, with the names listed beneath.
+Blocks can sit side by side with any gap between them, which is how a year's
+worth of trips usually ends up in one sheet. `sample-trips.xlsx` in this folder
+shows the shape. `No.` and `Sex` columns are ignored.
+
+People are matched on **full name**, ignoring case and stray spacing but keeping
+accents significant — in Vietnamese names they distinguish different people, so
+stripping them would merge two colleagues into one.
+
+**A name the roster does not know is taken to be someone who has left**: they are
+added with "Currently on the team" unticked, and appear on the trip card under
+**Left the company**. Their domain name starts as their full name, since the file
+does not carry one; correct it later if they come back.
+
+The file has no dates, so the dialog lists every trip it found with a date and
+duration box, pre-filled to 1 January of the year in the trip's name where there
+is one. Correct what matters, then import — nothing changes until you do. A trip
+already on the board is matched by name: its people are refreshed from the file
+and **its dates are left as you set them**, so re-importing never undoes your
+work.
+
 ## Exporting to Excel
 
 **Export to Excel** writes one sheet, one row per person per trip: the trip's
@@ -142,6 +171,8 @@ src/
     migrate.ts           Brings older stored data up to the current schema
     groupByBoss.ts       Boss columns, colour slots, and card width
     teamCoverage.ts      How much of a boss's team is confirmed on a trip
+    readTripBlocks.ts    Finds trip blocks laid out across a sheet
+    importTrips.ts       Matches names and folds trips in
     exportRows.ts        Flattens everything to one row per person per trip
     writeWorkbook.ts     Turns those rows into spreadsheet cells
     LocalStorageStore.ts TravelStore interface + browser-storage implementation
@@ -155,6 +186,7 @@ src/
     MemberChip.tsx       Draggable people, in the roster and on trips
     MemberForm.tsx       Add/edit a member
     ImportMembersDialog.tsx  File picker, column mapping, preview, confirm
+    ImportTripsDialog.tsx    Trips found, their dates, and what will change
     TripForm.tsx         Add/edit a trip
 ```
 
