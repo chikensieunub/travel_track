@@ -77,7 +77,7 @@ The app runs at http://localhost:5173.
 
 ## Importing members from Excel
 
-**Members → Import from Excel** reads an `.xlsx` file. Row one must be your column
+**Members → Import members** reads an `.xlsx` file. Row one must be your column
 headings; `sample-members.xlsx` in this folder shows the shape.
 
 Headings are matched for you - `Domain Name`, `Username`, `Manager`, `Office`
@@ -148,7 +148,8 @@ The toolbar keeps its buttons apart by what they do, not by file type:
 | **Export to Excel** | `.xlsx` | Read-only report of everything, for sharing |
 | **Back up** | `.json` | Complete copy: members, trips and who is on them |
 | **Restore** | `.json` | **Replaces everything** with a backup — asks first |
-| **Import from Excel** (Members panel) | `.xlsx` | Merges people into the roster |
+| **Import members** (Members panel) | `.xlsx` | Merges people into the roster |
+| **Import trips** (above the board) | `.xlsx` | Adds or refreshes trips and who was on them |
 
 Back up is what you keep; it is also how you move to a hosted version later.
 Restore is the only button that can lose data, so it names what it is about to
