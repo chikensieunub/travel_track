@@ -53,3 +53,40 @@ describe('nameKey', () => {
     expect(nameKey('ACME\\acruz')).toBe(nameKey('acme\\ACRUZ'))
   })
 })
+
+describe('invisible characters', () => {
+  // Spreadsheets carry these in from copy-paste, and nobody can see them.
+  const INVISIBLES: [string, string][] = [
+    ['zero-width space', '​'],
+    ['zero-width non-joiner', '‌'],
+    ['zero-width joiner', '‍'],
+    ['left-to-right mark', '‎'],
+    ['soft hyphen', '­'],
+    ['byte order mark', '﻿'],
+    ['word joiner', '⁠'],
+  ]
+
+  test.each(INVISIBLES)('strips a trailing %s', (_label, ch) => {
+    expect(cleanName(`Nguyễn Khánh Trung${ch}`)).toBe('Nguyễn Khánh Trung')
+  })
+
+  test.each(INVISIBLES)('strips a %s in the middle of a name', (_label, ch) => {
+    expect(cleanName(`Nguyễn${ch} Khánh Trung`)).toBe('Nguyễn Khánh Trung')
+  })
+
+  test('matches a name carrying an invisible character against a clean one', () => {
+    expect(nameKey('Đôn Thị Thúy Hằng​')).toBe(nameKey('Đôn Thị Thúy Hằng'))
+  })
+
+  test('treats a non-breaking space as an ordinary space', () => {
+    expect(nameKey('Nguyễn Khánh Trung')).toBe(nameKey('Nguyễn Khánh Trung'))
+  })
+
+  test('a name made only of invisible characters comes out empty', () => {
+    expect(cleanName('​­')).toBe('')
+  })
+
+  test('does not strip the characters of the name itself', () => {
+    expect(cleanName('Đôn Thị Thúy Hằng')).toBe('Đôn Thị Thúy Hằng')
+  })
+})
