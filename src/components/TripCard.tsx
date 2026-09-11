@@ -45,8 +45,9 @@ export function TripCard({
   const assignedIds = new Set(assigned.map((m) => m.id))
   const available: Member[] = data.members.filter((m) => m.active && !assignedIds.has(m.id))
 
-  // The boss is lifted out of the team columns, but only while he is still here.
-  const boss = membersOnTrip(data, trip.id).find((m) => m.active && isBoss(m))
+  // The boss is lifted out of the team columns. His own panel claims him whatever
+  // his "currently on the team" flag says - he is the one person we know is here.
+  const boss = membersOnTrip(data, trip.id).find((m) => isBoss(m))
   const notBoss = (list: Member[]) => list.filter((m) => m.id !== boss?.id)
 
   const confirmed = notBoss(membersOnTripByStatus(data, trip.id, 'confirmed'))

@@ -101,17 +101,6 @@ describe('The boss panel', () => {
     expect(within(column).queryByText(BOSS_NAME)).not.toBeInTheDocument()
   })
 
-  test('a boss who has left shows in the left panel rather than the boss panel', async () => {
-    const user = userEvent.setup()
-    await setup(user, [BOSS_NAME])
-    await user.click(within(roster()).getByRole('button', { name: `Edit ${BOSS_NAME}` }))
-    await user.click(screen.getByLabelText('Currently on the team'))
-    await user.click(screen.getByRole('button', { name: 'Save member' }))
-
-    const gone = within(card()).getByRole('group', { name: /^Left the company/ })
-    expect(within(gone).getByText(BOSS_NAME)).toBeInTheDocument()
-    expect(within(card()).queryByRole('group', { name: /^Boss/ })).not.toBeInTheDocument()
-  })
 })
 
 describe('The boss has nobody above him', () => {
@@ -155,5 +144,32 @@ describe('The boss has nobody above him', () => {
     await setupBossWithNoBoss(user)
     const entry = within(roster()).getByText(BOSS_NAME).closest('li')!
     expect(within(entry).getByText('Boss')).toBeInTheDocument()
+  })
+})
+
+describe('The boss is never shown as having left', () => {
+  beforeEach(() => localStorage.clear())
+
+  test('stays in the boss panel even when marked as no longer on the team', async () => {
+    const user = userEvent.setup()
+    await setup(user, [BOSS_NAME])
+    await user.click(within(roster()).getByRole('button', { name: `Edit ${BOSS_NAME}` }))
+    await user.click(screen.getByLabelText('Currently on the team'))
+    await user.click(screen.getByRole('button', { name: 'Save member' }))
+
+    expect(within(bossPanel()).getByText(BOSS_NAME)).toBeInTheDocument()
+    expect(within(card()).queryByRole('group', { name: /^Left the company/ })).not.toBeInTheDocument()
+  })
+
+  test('someone else marked as left still goes to the left panel', async () => {
+    const user = userEvent.setup()
+    await setup(user, [BOSS_NAME, 'Ana'])
+    await user.click(within(roster()).getByRole('button', { name: 'Edit Ana' }))
+    await user.click(screen.getByLabelText('Currently on the team'))
+    await user.click(screen.getByRole('button', { name: 'Save member' }))
+
+    const gone = within(card()).getByRole('group', { name: /^Left the company/ })
+    expect(within(gone).getByText('Ana')).toBeInTheDocument()
+    expect(within(bossPanel()).getByText(BOSS_NAME)).toBeInTheDocument()
   })
 })

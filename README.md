@@ -48,7 +48,9 @@ The app runs at http://localhost:5173.
   Change that one value to point the panel at someone else. He needs no direct
   boss of his own — having nobody above him is the normal case — and he is tagged
   **Boss** in the Members list, which doubles as a check: if that tag is missing,
-  the name stored in the roster does not match `BOSS_NAME`.
+  the name stored in the roster does not match `BOSS_NAME`. He is never shown as
+  having left: his own panel claims him whatever his "currently on the team" flag
+  says, and a trip import never records him as a leaver.
 - **Left the company** - a third panel appears on a card when someone on that
   trip is marked as having left. It is worked out from the roster rather than
   stored, so unticking "Currently on the team" moves that person on every trip

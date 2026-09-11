@@ -1,6 +1,7 @@
 import type { Member, TravelData } from './types'
 import { addMember, addTrip, assign, updateTrip } from './operations'
 import { cleanName, nameKey } from './names'
+import { isBoss } from './boss'
 
 export interface TripImport {
   title: string
@@ -64,7 +65,10 @@ export function applyTripImport(data: TravelData, trips: TripImport[]): ApplyRes
     for (const name of unmatched) {
       // Re-checked each time, so the same leaver on two trips is added once.
       if (matchNames(next, [name]).matched.length > 0) continue
-      next = addMember(next, { domainName: name, fullName: name, active: false })
+      // An unknown name on a past trip means someone who left - except the boss,
+      // who is the one person we know is still here.
+      const theBoss = isBoss({ fullName: name } as never)
+      next = addMember(next, { domainName: name, fullName: name, active: theBoss })
       membersAdded += 1
     }
 

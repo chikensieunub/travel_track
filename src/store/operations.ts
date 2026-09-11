@@ -1,6 +1,7 @@
 import type { Assignment, AssignmentStatus, Member, MemberDraft, TravelData, Trip } from './types'
 import { tripOverlaps } from './derive'
 import { cleanName } from './names'
+import { isBoss } from './boss'
 
 export const SCHEMA_VERSION = 3
 
@@ -158,7 +159,8 @@ export function membersOnTripByStatus(data: TravelData, tripId: string, status: 
  */
 export function leaversOnTrip(data: TravelData, tripId: string): Member[] {
   const ids = new Set(data.assignments.filter((a) => a.tripId === tripId).map((a) => a.memberId))
-  return data.members.filter((m) => ids.has(m.id) && !m.active)
+  // The boss has his own panel and belongs in it either way.
+  return data.members.filter((m) => ids.has(m.id) && !m.active && !isBoss(m))
 }
 
 export function tripsForMember(data: TravelData, memberId: string): Trip[] {

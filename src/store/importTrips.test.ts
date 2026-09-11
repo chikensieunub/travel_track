@@ -2,6 +2,7 @@ import { describe, test, expect } from 'vitest'
 import { matchNames, applyTripImport, type TripImport } from './importTrips'
 import { addMember, addTrip, assign, emptyData, membersOnTrip } from './operations'
 import type { TravelData } from './types'
+import { BOSS_NAME } from './boss'
 
 const rostered = (): TravelData => {
   let d = emptyData()
@@ -240,5 +241,30 @@ describe('when the roster already holds a duplicate', () => {
     const { matched } = matchNames(d, ['Only Record'])
     expect(matched).toHaveLength(1)
     expect(matched[0].active).toBe(false)
+  })
+})
+
+describe('the boss on an imported trip', () => {
+  test('is never recorded as having left, whatever the roster holds', () => {
+    const result = applyTripImport(emptyData(), [trip({ names: [BOSS_NAME] })])
+    const added = result.data.members.find((m) => m.fullName === BOSS_NAME)!
+    expect(added.active).toBe(true)
+  })
+
+  test('is still added, so he appears on the trip', () => {
+    const result = applyTripImport(emptyData(), [trip({ names: [BOSS_NAME] })])
+    expect(membersOnTrip(result.data, result.data.trips[0].id).map((m) => m.fullName)).toEqual([BOSS_NAME])
+  })
+
+  test('leaves everyone else to the usual rule', () => {
+    const result = applyTripImport(emptyData(), [trip({ names: [BOSS_NAME, 'Someone Unknown'] })])
+    expect(result.data.members.find((m) => m.fullName === 'Someone Unknown')!.active).toBe(false)
+  })
+
+  test('matches an existing boss record rather than adding another', () => {
+    const d = addMember(emptyData(), { domainName: 'X', fullName: BOSS_NAME })
+    const result = applyTripImport(d, [trip({ names: [BOSS_NAME] })])
+    expect(result.data.members).toHaveLength(1)
+    expect(result.membersAdded).toBe(0)
   })
 })
